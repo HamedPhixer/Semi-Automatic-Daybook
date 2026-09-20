@@ -14,3 +14,9 @@ AutoHotkeyU64.exe
 AutoHotkey.exe
 
 tests/state-test.txt
+
+# What build.ps1 makes, and a downloaded AutoHotkey to build it with
+dist/
+ahk/
+ahk.zip
+ahk-zip/

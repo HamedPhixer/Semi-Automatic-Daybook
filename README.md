@@ -62,8 +62,13 @@ Everything else is a click on the panel.
 
 ## Install
 
-1. [AutoHotkey v1.1](https://www.autohotkey.com/download/) - not v2.
-2. Run `Daybook.ahk`.
+From [Releases](https://github.com/HamedPhixer/Semi-Automatic-Daybook/releases),
+either one:
+
+- **`-portable.zip`** - unzip it, run `Start Daybook.bat`. AutoHotkey is in the
+  folder; nothing is installed and nothing is left behind.
+- **the plain zip** - run `Daybook.ahk`, if you already have
+  [AutoHotkey v1.1](https://www.autohotkey.com/download/) (not v2).
 
 It makes its own `Daybook.ini` next to itself, with every setting commented.
 Tray icon → **Settings** is the same thing in a window.
@@ -108,6 +113,7 @@ one thing: the two keys keep working over windows that are themselves elevated.
 ## The code
 
 `Daybook.ahk` only starts things; everything else is in `lib/`, listed in
-[`lib/All.ahk`](lib/All.ahk). Tests: `tests/run-tests.ps1`.
+[`lib/All.ahk`](lib/All.ahk). Tests: `tests/run-tests.ps1`. Both zips are built
+on GitHub from the tag, by `build.ps1`, after those tests pass.
 
 MIT - see [LICENSE](LICENSE).

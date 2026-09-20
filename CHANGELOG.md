@@ -44,7 +44,12 @@ screen size, a second Windows, or anyone else's habits yet.
   same three-pixel strip the panel draws, so the two windows look like one
   program. Click or drag it, or use the wheel.
 - `tests\run-tests.ps1`, covering the streak rules, the calendar arithmetic and
-  the state file round trip.
+  the state file round trip - and, before them, a check that `Daybook.ahk` and
+  all of `lib\` still parse.
+- **Two downloads, built on GitHub from the tag.** A portable zip with
+  AutoHotkey and a `Start Daybook.bat` in it, and the app on its own for people
+  who already have AutoHotkey v1.1. Neither is published unless the tests pass
+  and the tag matches `DaybookVersion`.
 
 ### Changed
 - Split from one 2,400-line file into `Daybook.ahk` plus `lib\`, listed in

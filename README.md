@@ -19,8 +19,7 @@ but it has only ever run on one machine.
 **The bar across the top is a sit timer.** It fills as you sit, turns amber at
 30 minutes and red at 45, and the red one breathes. The digits count *down*
 inside the 45 minutes and *up* once you are past them, so overstaying is a
-number you can see. It stops breathing after 15 minutes with no input at all -
-pulsing at an empty chair is what makes people uninstall things like this.
+number you can see. 
 
 It only counts time you were actually there. Presence comes from Windows' own
 display-state signal rather than from watching the keyboard, which gets the one
@@ -50,12 +49,6 @@ deleted; it carries, and the + turns amber until you have said what happened.
 **The app log** notes which program is in front while you are at the desk, by
 process name, and only while you are present. Walking away with a browser
 focused is not three hours of browsing.
-
-**When there is more than fits**, the panel stops growing at the bottom of the
-screen and scrolls instead: a slim bar appears down its right edge, and the
-wheel moves it while you point at the panel. The top strip - the bar, the
-status, the minutes and the break switch - stays put, because a readout you
-have to scroll to is not a readout.
 
 How wide it is and how tall it may get are both numbers in Settings, `[Look]
 WidthPx` and `MaxHeightPx`. Width takes a reload; everything else in that

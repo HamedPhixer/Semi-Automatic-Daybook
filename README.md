@@ -17,8 +17,6 @@ AutoHotkey v1 · Windows only · beta, it has only ever run on one machine
 grey still to do. **Every dot is a button** - click Tuesday's and Tuesday is
 ticked, for the evening you did the thing and forgot to say so.
 
-![A habit row: the tick box, the name, a week of dots and the streak](https://raw.githubusercontent.com/HamedPhixer/Semi-Automatic-Daybook/main/docs/images/habits.png)
-
 **Tasks.** One list for today, one for later. Tick or cross one and a small box
 opens to say why. Anything unfinished carries to tomorrow and asks.
 

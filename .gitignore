@@ -1,0 +1,16 @@
+# Yours, never shared: your settings, and what the panel keeps while it runs
+Daybook.ini
+Daybook-state.txt
+*.tmp
+
+# What the tests write
+tests/results-*.txt
+tests/Daybook.ini
+tests/Daybook-state.txt
+tests/journal/
+
+# A local AutoHotkey, if you drop one in to run it portably
+AutoHotkeyU64.exe
+AutoHotkey.exe
+
+tests/state-test.txt

@@ -42,9 +42,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         # notes from CHANGELOG.md (build.ps1); a version with a dash in it -
-        # 0.9.0-beta.1 - is a pre-release, which the "latest" link skips
+        # 0.9.0-beta.1 - is a pre-release, which the "latest" link skips.
+        #
+        # Moving a tag that has already been released has to WORK rather than
+        # fail halfway: a typo in the notes should not cost a version number.
+        # So publish if it is new, and replace the notes and both zips if it
+        # is not.
         run: |
           $v = $env:GITHUB_REF_NAME.TrimStart("v")
           $pre = if ($v.Contains("-")) { "--prerelease" } else { "--latest" }
-          gh release create $env:GITHUB_REF_NAME dist/Daybook-$v-portable.zip dist/Daybook-$v.zip `
-            --title "Daybook $v" --notes-file dist/notes.md $pre
+          $zips = "dist/Daybook-$v-portable.zip", "dist/Daybook-$v.zip"
+          gh release view $env:GITHUB_REF_NAME 2>&1 | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $env:GITHUB_REF_NAME --title "Daybook $v" --notes-file dist/notes.md $pre
+            if ($LASTEXITCODE) { throw "gh release edit failed" }
+            gh release upload $env:GITHUB_REF_NAME @zips --clobber
+            if ($LASTEXITCODE) { throw "gh release upload failed" }
+          } else {
+            gh release create $env:GITHUB_REF_NAME @zips --title "Daybook $v" --notes-file dist/notes.md $pre
+            if ($LASTEXITCODE) { throw "gh release create failed" }
+          }

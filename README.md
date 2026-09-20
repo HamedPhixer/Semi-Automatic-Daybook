@@ -27,6 +27,30 @@ counts and an empty chair does not.
 **An app log.** Which program was in front, by process name, and only while you
 were at the desk.
 
+<details>
+<summary><b>When does the sit clock reset?</b></summary>
+
+It only counts while you are there. A dark screen, a lock screen or a
+screensaver means gone, and so does five minutes without touching anything.
+Sound playing counts as sitting - you are watching something - for up to two
+hours after your last keypress, so a player left running overnight does not
+hold the clock open.
+
+**Five minutes away resets it to zero.** Less than five and it carries on from
+where it was, so a coffee or a lock screen never wipes the time you built up,
+and a red bar stays red until you actually take the whole five. Come back early
+from a break you started while already red and the digits say `break cut
+short`.
+
+`Win + F1` declares a break by hand, and that outranks every sensor above - for
+when no signal can tell sitting from standing. It ends when you type or click,
+but not on mouse movement, so nudging the mouse to keep the screen awake does
+not end it.
+
+Amber at 30 minutes and red at 45, five minutes for a break: all settings.
+
+</details>
+
 ## The journal
 
 One `YYYY-MM-DD.md` per day, append-only. Nothing already written is ever
@@ -103,8 +127,6 @@ one thing: the two keys keep working over windows that are themselves elevated.
 <summary><b>Not yet</b></summary>
 
 - Long task and habit names are clipped with nothing to show it.
-- The break rules are not written down here - how long away clears the clock,
-  and what a short break does instead.
 - Weeks, months and years: rolling the daily notes up into a weekly file, then
   monthly, then yearly, with the days moved to an archive.
 

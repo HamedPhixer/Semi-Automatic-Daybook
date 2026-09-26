@@ -106,7 +106,10 @@ BuildPanel() {
         Gui, Panel:Add, Text, vRowChk%n% gRowChkClick x26 y400 w22 h%RowH% Center c%CMuted% BackgroundTrans +0x200,
         Gui, Panel:Font, s9 Norm, Segoe UI
         Gui, Panel:Add, Text, vRowX%n%   gRowXClick   x50 y400 w18 h%RowH% Center c%CDim%   BackgroundTrans +0x200, % Chr(0x2715)
-        Gui, Panel:Add, Text, vRowTxt%n% x72 y400 w1  h%RowH% c%CText% BackgroundTrans +0x200,
+        ; +0x4000 is SS_ENDELLIPSIS: a name longer than the card ends in "..."
+        ; drawn by Windows, instead of being cut mid-letter with nothing to
+        ; say so. The whole of it is on hover - see HoverTip().
+        Gui, Panel:Add, Text, vRowTxt%n% x72 y400 w1  h%RowH% c%CText% BackgroundTrans +0x4200,
     }
     ; ---- the habit row pool
     ; A habit row is a tick box, a name, and the streak. The week of dots in
@@ -119,7 +122,7 @@ BuildPanel() {
         Gui, Panel:Font, s12 Norm, Segoe UI
         Gui, Panel:Add, Text, vHabChk%n% gHabChkClick x26 y400 w22 h%RowH% Center c%CMuted% BackgroundTrans +0x200,
         Gui, Panel:Font, s9 Norm, Segoe UI
-        Gui, Panel:Add, Text, vHabTxt%n% x50 y400 w1 h%RowH% c%CText% BackgroundTrans +0x200,
+        Gui, Panel:Add, Text, vHabTxt%n% x50 y400 w1 h%RowH% c%CText% BackgroundTrans +0x4200,
         Gui, Panel:Font, s9 Bold, Segoe UI
         Gui, Panel:Add, Text, vHabNum%n% x200 y400 w%HabNumW% h%RowH% Right c%CDim% BackgroundTrans +0x200,
         Gui, Panel:Font, s9 Norm, Segoe UI
@@ -174,6 +177,16 @@ OnPanelClick(wParam, lParam, msg, hwnd) {
 ; the whole height of the card, so it is aimed at horizontally and not
 ; vertically. Returns true if it took the click.
 DotHit(cx, cy) {
+    d := DotAt(cx, cy)
+    if (!IsObject(d))
+        return false
+    ToolTip, , , , 7                     ; its hint described the day before the click
+    HabitSetDay(d.hab, d.day)
+    return true
+}
+
+; The dot at a point in the panel, or "". Clicks and the hover hint both ask.
+DotAt(cx, cy) {
     global Dots, HabDotD, RowH
     top := (RowH - HabDotD) // 2         ; how far a dot sits below its card
     for _, d in Dots {
@@ -181,10 +194,9 @@ DotHit(cx, cy) {
             continue
         if (cy < d.y - top || cy >= d.y - top + RowH)
             continue
-        HabitSetDay(d.hab, d.day)
-        return true
+        return d
     }
-    return false
+    return ""
 }
 
 ; The panel background, painted by hand: the flat canvas, one filled rectangle

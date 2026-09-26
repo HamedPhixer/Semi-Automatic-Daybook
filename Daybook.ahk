@@ -51,10 +51,8 @@
 ;   that is the same every morning, a list you glance at and clear rather than
 ;   one you think about.
 ;
-;   Habits.ahk holds the rules, and is also where the Obsidian end is
-;   explained: each tick goes into that day's note, each day closes with a
-;   "## habits" block of real markdown checkboxes, and Habits.md in the journal
-;   folder is a scoreboard of the streaks.
+;   Habits.ahk holds the rules. Each day's note carries the habits with the
+;   run each had reached, and Daybook.md the streaks and two weeks of them.
 ;
 ; THE THREE SWITCHES - bottom right, in a row
 ;   solid / dim         panel mode; click to swap the two. GHOST is not on this
@@ -184,10 +182,19 @@
 ; handwritten journals in the folder above it - kept in its own subfolder so
 ; generated files never mix with the ones you wrote yourself.
 ;
-; It is APPEND-ONLY. Nothing already on disk is ever rewritten, so:
-;   - a power cut can lose at most the sentence being typed, never the file
-;   - you can edit it in Obsidian and this script will never fight you
-;   - Resilio has exactly one writer for these files and nothing to conflict on
+; The top of each note is YOURS - it opens with a "## my notes" heading - and
+; Daybook keeps one block at the bottom, between two markers: the day's tasks
+; with their notes, the habits, the time at the machine. Only that block is
+; ever rewritten, as the day goes and when something about the day changes
+; afterwards; nothing outside the markers is touched. See Journal.ahk.
+;
+; Obsidian FOLLOWS the panel and never the other way: it cannot show a cross, a
+; colour or a week of dots, so it is where you read and write, and the panel is
+; where things are done. Daybook.md beside the notes is where things stand -
+; the lists, the streaks, two weeks of habits. See Board.ahk.
+;
+; Every click as it happened - added, ticked, renamed - goes to log\ beside
+; this file, not to the vault.
 ;
 ;================================================================================
 ; THE DAY

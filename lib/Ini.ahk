@@ -28,11 +28,17 @@ DaybookIniTemplate() {
 RunAsAdmin=0
 
 [Journal]
-; Write the markdown files at all. 0 and nothing is written to the folder and
-; nothing already there is touched - the panel, the timer, the habits and their
-; streaks all carry on exactly as they are. The journal is the one part of
-; Daybook you can do without.
+; Write a note for each day. The top of it is yours to write in; under that,
+; between two markers, Daybook keeps a summary of the day - the tasks with
+; their notes, the habits, the time at the machine - and rewrites only that
+; part as the day goes. 0 and no note is written and none already there is
+; touched; the panel, the timer and the streaks carry on exactly as they are.
 Write=1
+
+; Keep Daybook.md in the folder: where things stand - today's list and the long
+; term one with their notes, the streaks, and two weeks of habits. Written by
+; Daybook whenever something changes; change things on the panel, not in it.
+Board=1
 
 ; The folder the daily journal files go in, one YYYY-MM-DD.md per day. Created
 ; if it is missing. BLANK means a Daybook journal folder inside Documents.
@@ -85,11 +91,10 @@ BreakGuardSec=20
 ; dots and gives the room to the name.
 DaysShown=7
 
-; Write Habits.md into the journal folder: a scoreboard of the streaks and a
-; grid of the last two weeks, rewritten every time a habit changes. It is the
-; one generated file that IS overwritten - the daily notes are the record.
-; 0 leaves the folder to the daily notes alone.
-Scoreboard=1
+; Rest days a habit may have in one calendar month - sick, away, a day off on
+; purpose. A rest day keeps the streak alive without adding to it. 0 turns
+; them off.
+RestDaysPerMonth=2
 
 [Log]
 ; Record which program is in front while you are at the desk. 0 turns the app

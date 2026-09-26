@@ -17,7 +17,7 @@ global IniFile := CfgSeed(A_ScriptDir "\Daybook.ini", DaybookIniTemplate())
 
 ; Shown in the settings window and in the tray tip. MAJOR.MINOR.PATCH; a dash
 ; on the end makes it a test build, the way Vocab does it.
-global DaybookVersion := "0.9.0-beta.1"
+global DaybookVersion := "0.9.0-beta.2"
 
 ; Read a SECOND time here, and on purpose. Daybook.ahk has to know this before
 ; a single one of these files is loaded - deciding whether to relaunch itself
@@ -28,10 +28,17 @@ global RunAsAdmin    := CfgBool(IniFile, "General", "RunAsAdmin", false)
 
 ; The markdown files are the one part of this you can do without. Off, the
 ; panel, the timer, the habits and their streaks all carry on exactly as they
-; are - nothing is written to the folder, and nothing that is already there is
-; touched. See JournalRaw().
+; are - no daily note is written, and none already there is touched. See
+; DayNoteWrite(). The board has a switch of its own.
 global JournalOn     := CfgBool(IniFile, "Journal", "Write", true)
 global JournalDir    := CfgStrDef(IniFile, "Journal", "Folder", A_MyDocuments "\Daybook journal")
+; Daybook.md in the same folder: where things stand - the lists with their
+; notes, the streaks, two weeks of habits. Written by Daybook only; see
+; Board.ahk. Independent of Write.
+global BoardOn       := CfgBool(IniFile, "Journal", "Board", true)
+; How long a finished day's list is kept, so that its note can still be
+; corrected - and, later, so a week or a month can be looked back over.
+global PastKeepDays  := 42
 global DayStartHour  := CfgNum(IniFile, "Journal", "DayStartsAtHour", 3)   ; 03:00 -> 03:00
 
 ; ---- sit timer -------------------------------------------------------------
@@ -62,14 +69,11 @@ global StatsTop      := CfgNum(IniFile, "Log", "AppsListed", 10)
 ; How many days of dots a habit row carries, TODAY always being the last one.
 ; 0 hides the dots and gives the whole row to the name and the streak.
 global HabitDays     := CfgNum(IniFile, "Habits", "DaysShown", 7)
-; Rewrite Habits.md in the journal folder - the scoreboard, see HabitBoard().
-global HabitBoardOn  := CfgBool(IniFile, "Habits", "Scoreboard", true)
-; How many days of history each habit keeps, as one date per day it was done.
-; The dots only need a fortnight of it. The rest is for the streak: ticking a
-; day you missed makes the number impossible to keep by counting up, so it is
-; recounted along this list instead (HabitRecount), and the list is how far
-; back that can see. A year and a week, at eleven bytes a day.
-global HabitKeep     := 372
+; Rest days a habit may have in a calendar month - sick, away, a day off on
+; purpose. They hold the chain without adding to it. 0 turns them off. See
+; Habits.ahk. (The whole history of every habit is kept: a streak can only be
+; measured as far back as the days it is measured from.)
+global RestPerMonth  := CfgNum(IniFile, "Habits", "RestDaysPerMonth", 2)
 
 ; ---- panel -----------------------------------------------------------------
 ; How wide the panel is. Everything horizontal is worked out from it, so this
@@ -106,9 +110,10 @@ global RowPool       := 22       ; controls pre-made for rows; the two lists
 global HabPool       := 10
 global HabDotD       := 7        ; a dot, across
 global HabDotGap     := 3        ; and the space between two of them
-global HabNumW       := 26       ; the streak number's column, right-aligned
+global HabNumW       := 36       ; the streak column: "1000", or "112w" for weeks
 global CapW          := 260      ; capture box: the panel's width, or this as a
 global NoteW         := 260      ; floor if the panel is ever narrower
+global BoxMaxLines   := 6        ; the most either box grows to before it scrolls
 global MarkDelayMs   := CfgNum(IniFile, "Look", "UndoSec", 6) * 1000
                                  ; grace period before a tick or a cross is
                                  ; written to the journal. Undo inside this
@@ -221,8 +226,8 @@ ClampConfig() {
         HabitDays := 0
     if (HabitDays > 14)
         HabitDays := 14
-    if (HabitKeep < HabitDays + 2)       ; the dots need the days they show
-        HabitKeep := HabitDays + 2
+    if (RestPerMonth < 0)
+        RestPerMonth := 0
     if (PanelAlpha < 0)
         PanelAlpha := 0
     if (PanelAlpha > 255)

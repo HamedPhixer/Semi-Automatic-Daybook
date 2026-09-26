@@ -68,8 +68,12 @@ SetupTable() {
     d.Push({kind: "head", label: "THE JOURNAL"})
     d.Push({kind: "bool", sect: "Journal", key: "Write", var: "JournalOn"
           , label: "Keep a journal"
-          , hint: "No: nothing is written to the folder at all. The panel, the"
-                . " timer and the habit streaks carry on as they are."})
+          , hint: "One note a day: your own writing on top, and Daybook's summary"
+                . " of the day under it. No: no notes are written at all."})
+    d.Push({kind: "bool", sect: "Journal", key: "Board", var: "BoardOn"
+          , label: "Write Daybook.md"
+          , hint: "Where things stand, in the folder: your lists with their notes,"
+                . " the streaks, two weeks of habits. Rewritten as things change."})
     d.Push({kind: "path", sect: "Journal", key: "Folder", var: "JournalDir"
           , label: "Folder", pick: "folder"
           , hint: "One YYYY-MM-DD.md per day goes here. It has to exist already"
@@ -113,10 +117,10 @@ SetupTable() {
           , label: "Days of dots", unit: "days"
           , hint: "The run of dots on a habit row, today last. 0 hides them and"
                 . " gives the room to the name."})
-    d.Push({kind: "bool", sect: "Habits", key: "Scoreboard", var: "HabitBoardOn"
-          , label: "Write Habits.md"
-          , hint: "A scoreboard in the journal folder: the streaks, and a grid"
-                . " of the last two weeks. Rewritten on every change."})
+    d.Push({kind: "num", sect: "Habits", key: "RestDaysPerMonth", var: "RestPerMonth"
+          , label: "Rest days a month", unit: "per habit"
+          , hint: "Sick, away, a day off: a rest day keeps the streak without"
+                . " adding to it. 0 turns them off."})
 
     d.Push({kind: "head", label: "THE APP LOG"})
     d.Push({kind: "bool", sect: "Log", key: "LogApps", var: "LogApps"
@@ -227,8 +231,11 @@ SetupBuild() {
             Gui, Setup:Font, s8 Bold c%CBlue%, Segoe UI
             opt := "x" lblX " y" y " w420 BackgroundTrans"
             Gui, Setup:Add, Text, %opt%, % d.label
-            opt := "x" lblX " y" (y + 17) " w" (hintX + hintW - lblX) " h1 Background" CTrack
-            Gui, Setup:Add, Text, %opt%
+            ; a Progress bar: the one control v1 will fill with a colour - a
+            ; Text with "Background" silently draws nothing (see HabEdRect)
+            opt := "x" lblX " y" (y + 17) " w" (hintX + hintW - lblX)
+                 . " h1 Disabled -E0x200 -Theme Background" CTrack " c" CTrack
+            Gui, Setup:Add, Progress, %opt%, 0
             y += headH
             continue
         }

@@ -77,16 +77,19 @@ HourStrip() {
             hours["h" p1] := {}
         hours["h" p1][p2] := sec
     }
+    ; Sorted by hours since the day began, not by the clock: the day runs from
+    ; DayStartHour to DayStartHour, so 01:00 comes AFTER 23:00, and a plain sort
+    ; put the small hours at the top of the strip as if they started the day.
     keys := ""
     for h, _ in hours
-        keys .= h "`n"
+        keys .= Format("{:02}", Mod(SubStr(h, 2) + 24 - DayStartHour, 24)) "`t" h "`n"
     Sort, keys
     out := ""
     Loop, Parse, keys, `n, `r
     {
         if (A_LoopField = "")
             continue
-        key := A_LoopField
+        key := SubStr(A_LoopField, InStr(A_LoopField, "`t") + 1)
         h := SubStr(key, 2)
         lines := ""
         for exe, sec in hours[key]

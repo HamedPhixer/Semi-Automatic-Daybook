@@ -11,6 +11,15 @@ global CutShort     := 0         ; came back early from a break taken while over
 global ReviewQueue  := []
 global AppSec       := {}
 global HourSec      := {}
+global NextTaskId   := 1         ; the id the next new task gets - see Tasks.ahk
+; What each finished day had on its list, kept so its note can still be
+; rewritten when something about it changes afterwards - an answer to "why
+; not?" given the next morning. {day, id, list, status, carry, note, text}, for
+; PastKeepDays. CloseDay() fills it.
+global Past         := []
+global PastTime     := {}        ; day -> that day's time-at-the-machine text
+global NoteFor      := ""        ; the note box is open for {id, day}
+global StateNoSave  := 0         ; the state file could not be read OR set aside
 
 ; ---- runtime ---------------------------------------------------------------
 global StateFile    := A_ScriptDir "\Daybook-state.txt"
@@ -67,6 +76,12 @@ global CapHintAdd   := ""        ; the normal hint, restored after a rename
 global PendMarkKind := ""        ; "T" a task, "H" a habit, "" nothing pending
 global PendMarkTask := 0         ; a tick/cross waiting out its grace period
 global PendMarkStatus := ""
+global BoxBase      := {}        ; each growing box's one-line shape - see BoxFit()
+; ---- the habit window - see HabitWin.ahk --------------------------------------
+global HabEdHwnd := 0, HabEdBuilt := 0, HabEdName := "", HabEdMonth := ""
+global HabEdEnd := "yesterday", HabEdCells := [], HabEdLoading := 0, HabEdTyped := ""
+global HabEdW := 0, HabEdH := 0, HabEdFocus := ""
+global HabEdN2Was := "", HabEdN3Was := "", HabEdV := "", HabEdI := 0
 ; ---- the settings window ---------------------------------------------------
 ; Here rather than in SettingsWin.ahk: that file is past the Return that ends
 ; the auto-execute section, so a "global x := 1" there would declare the

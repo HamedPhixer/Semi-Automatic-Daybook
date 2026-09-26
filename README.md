@@ -14,8 +14,11 @@ AutoHotkey v1 · Windows only · beta, it has only ever run on one machine
 ## What it does
 
 **Habits.** A tick box, a week of dots and a streak. Green done, red missed,
-grey still to do. **Every dot is a button** - click Tuesday's and Tuesday is
-ticked, for the evening you did the thing and forgot to say so.
+blue a rest day. **Every dot is a button** - click Tuesday's and Tuesday is
+ticked, for the evening you did the thing and forgot to say so. Every day,
+every few days, or so many times a week; rest days for when you are sick or
+away. Right-click a habit for its calendar, where you can also bring in a
+streak you kept somewhere else.
 
 **Tasks.** One list for today, one for later. Tick or cross one and a small box
 opens to say why. Anything unfinished carries to tomorrow and asks.
@@ -53,26 +56,31 @@ Amber at 30 minutes and red at 45, five minutes for a break: all settings.
 
 ## The journal
 
-One `YYYY-MM-DD.md` per day, append-only. Nothing already written is ever
-rewritten, so you can edit it in Obsidian and Daybook will never fight you.
+One `YYYY-MM-DD.md` per day. The top is yours to write in; Daybook keeps a
+summary of the day at the bottom, and rewrites only that part:
 
 ```
-09:14  + added: finish the habit tracker
-11:02  ✓ read 20 pages   ·  12 in a row
-14:30  ✓ finish the habit tracker
-       ↳ took longer than the estimate, as usual
+## my notes
 
-03:00  — day closed
-       active 6h 12m
-       chrome 2h 41m · Code 1h 58m · slack 22m
+A long day. The bike can wait.
 
-## habits
-
-- [x] read 20 pages  (streak:: 12)
-- [ ] workout  (streak:: 0)
+%% daybook: written by Daybook ... %%
+### tasks
+- ✓ buy milk  — got the oat one
+- ✗ fix the bike  — shop was closed
+### habits
+- ✓ painting  · 3 in a row
+### time at the machine
+active 6h 12m
+%% /daybook %%
 ```
 
-Real checkboxes with Dataview fields, so you can count them across months.
+Right-click a task to give it a note; it lands beside the task. Tick a habit
+for yesterday and yesterday's note is corrected.
+
+**`Daybook.md`** beside them is where things stand: your lists, the streaks,
+two weeks of habits. Change things on the panel; Obsidian follows.
+
 Don't want any of it? Settings → **Keep a journal** → no.
 
 ## Keys
@@ -114,6 +122,8 @@ which is how the timer knows you are present. No key is read or stored; see
 creates is Windows' own audio meter, asked whether a sound is playing.
 
 **It writes in two places:** its own folder, and the journal folder you pick.
+Everything it knows is in one file there, `Daybook-state.txt`, with a backup a
+day in `backups\`.
 
 **Process names, not window titles** - titles carry document names and page
 titles, and that folder may be syncing to your phone.
@@ -126,7 +136,6 @@ one thing: the two keys keep working over windows that are themselves elevated.
 <details>
 <summary><b>Not yet</b></summary>
 
-- Long task and habit names are clipped with nothing to show it.
 - Weeks, months and years: rolling the daily notes up into a weekly file, then
   monthly, then yearly, with the days moved to an archive.
 

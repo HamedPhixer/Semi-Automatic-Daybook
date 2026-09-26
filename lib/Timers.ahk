@@ -65,21 +65,24 @@ Return
 
 TickMinute:
     RollIfNeeded()
-    if (OpenStats) {
-        ; UpdateStats() only rewrites the text. The drawer, and the window under
-        ; it, were sized for the number of apps there were when the drawer was
-        ; last laid out - so the minute a NEW app first shows up in the list, the
-        ; extra line is painted into space that does not exist and the footer
-        ; sits on top of it. Growing the panel needs a relayout, so ask for one
-        ; whenever the count has moved. It stops happening once the list reaches
-        ; StatsTop, which is why this only ever looked like an early-day bug.
-        ; Skipped while the panel is hidden: Relayout() ends in Gui,Show and
-        ; would put it back on screen. ShowPanel() relayouts anyway.
-        if (PanelVisible && StatsLines() != StatsShown)
-            Relayout()
-        else
-            UpdateStats()
-    }
+    ; UpdateStats() only rewrites the text. The drawer, and the window under it,
+    ; were sized for the number of apps there were when the drawer was last laid
+    ; out - so the minute a NEW app first shows up in the list, the extra line
+    ; is painted into space that does not exist and the footer sits on top of
+    ; it. Growing the panel needs a relayout, so ask for one whenever the count
+    ; has moved. It stops happening once the list reaches StatsTop, which is why
+    ; this only ever looked like an early-day bug. Skipped while the panel is
+    ; hidden: Relayout() ends in Gui,Show and would put it back on screen.
+    ; ShowPanel() relayouts anyway.
+    ;
+    ; The text is rewritten whether the drawer is open or not. The total sits
+    ; in the HEADING, which is on screen either way - updating it only while the
+    ; drawer was open is what left a closed heading showing the morning's total
+    ; all afternoon.
+    if (OpenStats && PanelVisible && StatsLines() != StatsShown)
+        Relayout()
+    else
+        UpdateStats()
     SaveState()
 Return
 

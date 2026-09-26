@@ -1,6 +1,9 @@
 # Yours, never shared: your settings, and what the panel keeps while it runs
 Daybook.ini
 Daybook-state.txt
+log/
+backups/
+Daybook-state.unreadable-*.txt
 *.tmp
 
 # What the tests write

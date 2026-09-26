@@ -18,6 +18,8 @@ Journal(Chr(0x00B7) " session start")
 
 BuildTray()
 Refresh()
+SaveState()                  ; today's note and the board, there from the start
+
 SetTimer, TickFast,   150
 SetTimer, TickSecond, 1000
 SetTimer, TickSample, %SampleMs%

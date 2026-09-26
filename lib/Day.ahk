@@ -34,48 +34,61 @@ RollIfNeeded() {
     SitSec := 0, AwaySec := 0, CutShort := 0
     AppSec := {}, HourSec := {}
     HabitSettle()                ; yesterday is settled: chains kept or broken
-    HabitBoard()
     SaveState()
     Refresh()
 }
 
-; Write the closing day's summary, then decide what survives. Unfinished work is
-; never deleted: it stays, its carry count goes up, and it joins the review
-; queue so the amber + has something to ask about.
+; The day is over. Keep a record of it, write its note for the last time, then
+; decide what survives into the next one.
+;
+; The record (Past) is what lets the day's note still be put right after it is
+; over - the answer to "why not?" given the next morning goes onto that day's
+; line, not into a new one. Everything on Today's list goes in, and a long term
+; task only if it was finished that day.
+;
+; Unfinished work is never deleted: it stays, its carry count goes up, and it
+; joins the review queue - knowing which day it belongs to - so the amber + has
+; something to ask about. Finished work leaves the panel, long term included:
+; it is done, and the note has it.
 CloseDay() {
+    global Tasks, Past, PastTime, ReviewQueue, CurDay
+    day := CurDay
+    ; A long term task finished before tasks remembered WHEN they were
+    ; finished has no doneOn; it leaves the panel now like the rest, so it is
+    ; recorded on this day rather than vanishing without a trace.
+    for _, t in Tasks
+        if (t.list = "T" || t.doneOn = day || (t.status != "open" && t.doneOn = ""))
+            Past.Push({day: day, id: t.id, list: t.list, status: t.status
+                     , carry: t.carry, note: TaskNote(t, day), text: t.text})
+    PastTime[day] := DayTimeText()
+    DayNoteWrite(day, true)              ; the last word, time and all
     open := [], keep := []
     for _, t in Tasks {
-        if (t.list = "L") {
-            keep.Push(t)
+        if (t.status != "open")
             continue
-        }
-        if (t.status = "open") {
+        if (t.list = "T") {
             t.carry += 1
-            open.Push(t.text)
-            keep.Push(t)
+            open.Push({day: day, id: t.id, text: t.text})
         }
+        t.notes := {}                    ; the day's notes are in Past now
+        keep.Push(t)
     }
-    body := "`n" TS() "  " Chr(0x2014) " day closed`n"
-    body .= "       active " HumanTime(TotalLogged()) "`n"
-    tops := ""
-    for _, a in TopApps(8)
-        tops .= (tops ? " " Chr(0x00B7) " " : "") a.exe " " HumanTime(a.sec)
-    if (tops != "")
-        body .= "       " tops "`n"
-    strip := HourStrip()
-    if (strip != "")
-        body .= "`n" strip
-    if (open.Length()) {
-        body .= "`n       unfinished:`n"
-        for _, txt in open
-            body .= "       - " txt "`n"
-    }
-    ; The habits go in LAST and as real markdown, under a heading of their own -
-    ; the plain indented lines above are for reading, the checkboxes below are
-    ; for Obsidian to count. See HabitDayBlock().
-    body .= HabitDayBlock(CurDay)
-    JournalRaw(CurDay, body)
     Tasks := keep
     ReviewQueue := open
+    PastPrune()
 }
 
+; Finished days are kept PastKeepDays, then let go. The day notes keep them for
+; good - this is only what Daybook needs to be able to rewrite one.
+PastPrune() {
+    global Past, PastTime, PastKeepDays
+    cut := DayShift(LogicalDay(), -PastKeepDays)
+    keep := []
+    for _, r in Past
+        if !(r.day < cut)
+            keep.Push(r)
+    Past := keep
+    for day in PastTime.Clone()
+        if (day < cut)
+            PastTime.Delete(day)
+}

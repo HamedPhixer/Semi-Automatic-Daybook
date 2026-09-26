@@ -126,11 +126,22 @@ RowAction(n, status) {
     if (!i || !Tasks[i])
         return
     if (Tasks[i].status = status) {          ; clicking the same mark undoes it
-        CancelMark("T", i)
+        ; Inside the grace window nothing was written, so nothing is. Past it
+        ; the mark is on disk, and the honest thing is to say it was taken back
+        ; - otherwise the journal says done about a task that is open again.
+        if (!CancelMark("T", i))
+            Journal(Chr(0x21BA) " reopened: " Tasks[i].text)
         SetStatus(i, "open")
         return
     }
-    CommitMark()                             ; a different row was still pending
+    ; Tick, then cross, on the SAME task inside the grace window: that is one
+    ; decision corrected, not two, so the tick is dropped rather than written.
+    ; A pending "add" is kept - the task still exists, only its mark changed.
+    if (PendMarkKind = "T" && PendMarkTask = i
+        && (PendMarkStatus = "done" || PendMarkStatus = "failed"))
+        CancelMark("T", i)
+    else
+        CommitMark()                         ; a different row was still pending
     SetStatus(i, status)
     PendMark("T", i, status)
     OpenNote(i, status, RowY[n])
@@ -198,6 +209,7 @@ RowMenu(i) {
     Menu, Row, Add, placeholder, MenuNoop     ; so DeleteAll cannot fail first time
     Menu, Row, DeleteAll
     Menu, Row, Add, Rename, MenuRename
+    Menu, Row, Add, % (TaskNote(Tasks[i], CurDay) != "" ? "Edit note" : "Add a note"), MenuNote
     Menu, Row, Add, % (Tasks[i].list = "T" ? "Move to Long term" : "Move to Today"), MenuMove
     Menu, Row, Add, Delete, MenuDelete
     Menu, Row, Show
@@ -210,10 +222,15 @@ HabMenu(i) {
     MenuHabit := i
     Menu, Hab, Add, placeholder, MenuNoop     ; so DeleteAll cannot fail first time
     Menu, Hab, DeleteAll
+    Menu, Hab, Add, Edit habit..., MenuHabEdit
     Menu, Hab, Add, Rename, MenuHabRename
     Menu, Hab, Add, Delete habit, MenuHabDelete
     Menu, Hab, Show
 }
+
+MenuHabEdit:
+    HabEdShow(MenuHabit)
+Return
 
 MenuHabRename:
     StartHabitRename(MenuHabit)
@@ -230,6 +247,10 @@ MenuRename:
     StartRename(MenuTask)
 Return
 
+MenuNote:
+    EditNote(MenuTask)
+Return
+
 MenuMove:
     Tasks[MenuTask].list := (Tasks[MenuTask].list = "T") ? "L" : "T"
     SaveState()
@@ -237,18 +258,7 @@ MenuMove:
 Return
 
 MenuDelete:
-    ; Added and dropped inside the grace window: it never happened, so nothing
-    ; is written at all - not the add, not the drop. Otherwise flush whatever
-    ; was pending (it belongs to a different task) and record the drop.
-    ; Either way nothing stays pending, which matters: RemoveAt shifts every
-    ; index above it and a pending one would then point at the wrong task.
-    if (!CancelMark("T", MenuTask)) {
-        CommitMark()
-        Journal("- dropped: " Tasks[MenuTask].text)
-    }
-    Tasks.RemoveAt(MenuTask)
-    SaveState()
-    Refresh()
+    DeleteTask(MenuTask)
 Return
 
 ; Opacity, and the row under the pointer. Polled rather than driven by
@@ -256,8 +266,10 @@ Return
 ; arrives, and in click-through mode no mouse messages arrive at all.
 HoverCheck() {
     global Hot, HotCard
-    if (!PanelVisible)
+    if (!PanelVisible) {
+        HoverTip(0)
         return
+    }
     WinGetPos, px, py, pw, ph, ahk_id %PanelHwnd%
     if (px = "")
         return
@@ -279,6 +291,100 @@ HoverCheck() {
         InvalidateCard(was)
         InvalidateCard(want)
     }
+    ; A dot says which day it is and what a click will do - the dots are
+    ; buttons, and nothing else on the panel says so.
+    tipKey := want
+    if (inside && !Ghost() && IsObject(dot := DotAt(mx - px, my - py)))
+        tipKey := "dot" dot.hab "|" dot.day
+    HoverTip(tipKey)
+}
+
+; "Thu 24 Sep - missed. Click to mark it done."
+DotHint(i, day) {
+    global Habits
+    h := Habits[i]
+    if (!h)
+        return ""
+    today := LogicalDay()
+    FormatTime, when, % StrReplace(day, "-"), ddd d MMM
+    if (day = today)
+        when := "today"
+    st := HabitDayState(h, day, today)
+    what := (st = "done") ? "done" : (st = "rest") ? "rest day"
+          : (st = "todo") ? "not done yet" : (st = "off") ? "not needed" : "missed"
+    act := HabitDid(h, day) ? "Click to take it back." : "Click to mark it done."
+    return when " " Chr(0x2014) " " what ". " act "`nRight-click for the calendar."
+}
+
+; The whole name of a row that does not fit, and the task's note for today if
+; it has one, once the pointer has rested on it for half a second - long enough
+; that sweeping across the panel does not flicker a trail of tips behind it.
+; A name that fits is not repeated: a tip saying exactly what the row already
+; says is noise. Laid directly under the row, so it reads as part of it.
+HoverTip(card) {
+    global Cards, PanelHwnd, RowH, RowTask, CurDay
+    static last := 0, since := 0, shown := false
+    if (card != last) {
+        if (shown)
+            ToolTip, , , , 7
+        last := card, since := A_TickCount, shown := false
+        return
+    }
+    if (!card || shown || A_TickCount - since < 500)
+        return
+    shown := true                        ; asked once per rest, fits or not
+    if (SubStr(card, 1, 3) = "dot") {
+        StringSplit, dk, card, |
+        tip := DotHint(SubStr(dk1, 4), dk2)
+        if (tip != "") {
+            CoordMode, ToolTip, Screen
+            MouseGetPos, mx, my
+            ToolTip, %tip%, % mx + 12, % my + 18, 7
+        }
+        return
+    }
+    c := Cards[card]
+    ctrl := (c.kind = "H" ? "HabTxt" : "RowTxt") c.pool
+    GuiControlGet, hwnd, Panel:Hwnd, %ctrl%
+    GuiControlGet, text, Panel:, %ctrl%
+    GuiControlGet, p, Panel:Pos, %ctrl%
+    tip := (text != "" && TextWidth(hwnd, text) > pW) ? text : ""
+    if (c.kind = "T" && (t := Tasks[RowTask[c.pool]])) {
+        note := TaskNote(t, CurDay)
+        if (note != "")
+            tip .= (tip != "" ? "`n" : "") Chr(0x270E) " " WrapText(note, 60)
+    }
+    if (tip = "")
+        return
+    WinGetPos, wx, wy, , , ahk_id %PanelHwnd%
+    CoordMode, ToolTip, Screen
+    ToolTip, %tip%, % wx + pX, % wy + c.y + RowH, 7
+}
+
+; Break text into lines of about n characters at spaces. A tooltip does not
+; wrap by itself, and a long note would otherwise be one line across the screen.
+WrapText(s, n) {
+    out := "", line := ""
+    Loop, Parse, s, %A_Space%
+    {
+        if (line != "" && StrLen(line) + 1 + StrLen(A_LoopField) > n)
+            out .= line "`n", line := A_LoopField
+        else
+            line .= (line != "" ? " " : "") A_LoopField
+    }
+    return out line
+}
+
+; How wide a line of text comes out in a control's own font, in pixels.
+TextWidth(hwnd, text) {
+    hdc  := DllCall("GetDC", "ptr", hwnd, "ptr")
+    font := DllCall("SendMessage", "ptr", hwnd, "uint", 0x31, "ptr", 0, "ptr", 0, "ptr")   ; WM_GETFONT
+    old  := DllCall("SelectObject", "ptr", hdc, "ptr", font, "ptr")
+    VarSetCapacity(size, 8, 0)
+    DllCall("GetTextExtentPoint32W", "ptr", hdc, "wstr", text, "int", StrLen(text), "ptr", &size)
+    DllCall("SelectObject", "ptr", hdc, "ptr", old)
+    DllCall("ReleaseDC", "ptr", hwnd, "ptr", hdc)
+    return NumGet(size, 0, "int")
 }
 
 TogglePanel() {

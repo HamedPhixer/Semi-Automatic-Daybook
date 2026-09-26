@@ -13,7 +13,9 @@ Relayout() {
     Gui, Panel:Default
     used := 0
     habUsed := 0
-    RowY := [], Cards := [], Dots := []
+    ; RowTask too: a pool row left over from a longer list would otherwise still
+    ; claim a task, and EditNote could find it there, with no y to go with it
+    RowY := [], RowTask := [], Cards := [], Dots := []
 
     ; How tall the panel will be has to be known BEFORE anything is placed,
     ; because the footer line is what everything has to stop above - and it is
@@ -381,7 +383,7 @@ PlaceHabits(ByRef y) {
 
         GuiControl, Panel:Move, HabNum%r%, % "x" numX " y" y " w" HabNumW
         GuiControl, Panel:+c%numCol%, HabNum%r%
-        GuiControl, Panel:, HabNum%r%, % hb.streak
+        GuiControl, Panel:, HabNum%r%, % HabitStreakText(hb)
         GuiControl, Panel:Show, HabNum%r%
 
         ; Each dot remembers which habit and which day it stands for, because

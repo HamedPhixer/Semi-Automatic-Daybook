@@ -18,7 +18,8 @@
 ;   Tasks      adding, renaming and marking a task
 ;   Habits     the daily habits, their week of dots and their streaks
 ;   Day        when a day starts and what happens when it ends
-;   Journal    writing to the markdown files - append only
+;   Journal    the day note (Daybook's block + yours) and Daybook's own log
+;   Board      Daybook.md - where things stand, written one way
 ;   Store      Daybook-state.txt, and the [Saved] part of Daybook.ini
 ;   Panel      building the panel, painting it, and how much of it shows
 ;   Break      a break you declared by hand
@@ -47,6 +48,7 @@
 #Include %A_LineFile%\..\Habits.ahk
 #Include %A_LineFile%\..\Day.ahk
 #Include %A_LineFile%\..\Journal.ahk
+#Include %A_LineFile%\..\Board.ahk
 #Include %A_LineFile%\..\Store.ahk
 #Include %A_LineFile%\..\Panel.ahk
 #Include %A_LineFile%\..\Break.ahk
@@ -57,6 +59,7 @@
 #Include %A_LineFile%\..\Note.ahk
 #Include %A_LineFile%\..\Review.ahk
 #Include %A_LineFile%\..\SettingsWin.ahk
+#Include %A_LineFile%\..\HabitWin.ahk
 #Include %A_LineFile%\..\Tray.ahk
 #Include %A_LineFile%\..\Ini.ahk
 #Include %A_LineFile%\..\Settings.ahk

@@ -76,14 +76,17 @@ $head = @"
 
 ---
 "@
+# Folded, like the long half of the changelog: there for anyone checking a
+# download, out of the way of everyone reading what changed.
 $sums = @"
 
----
-
-SHA-256
+<details>
+<summary>SHA-256 checksums</summary>
 
     $(Sha $portable)  Daybook-$version-portable.zip
     $(Sha $plain)  Daybook-$version.zip
+
+</details>
 "@
 [IO.File]::WriteAllText((Join-Path $dist "notes.md"), "$head`n$notes`n$sums`n", (New-Object Text.UTF8Encoding $false))
 

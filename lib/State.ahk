@@ -1,14 +1,13 @@
 ﻿;================================================================================
 ; State (persisted)
 ;================================================================================
-global Tasks        := []        ; {list:"T"/"L", text, status, carry, born, due, asked}
+global Tasks        := []        ; {list:"T"/"L"/"M", text, status, carry, born, due, asked, since}
 global Habits       := []        ; {text, born, streak, best, total, done:[days]}
 global CurDay       := ""
 global SitSec       := 0
 global AwaySec      := 0
 global Away         := 0         ; the sensors say you are gone (not a declared break)
 global CutShort     := 0         ; came back early from a break taken while overdue
-global ReviewQueue  := []
 global AppSec       := {}
 global HourSec      := {}
 global NextTaskId   := 1         ; the id the next new task gets - see Tasks.ahk
@@ -18,12 +17,13 @@ global NextTaskId   := 1         ; the id the next new task gets - see Tasks.ahk
 ; PastKeepDays. CloseDay() fills it.
 global Past         := []
 global PastTime     := {}        ; day -> that day's time-at-the-machine text
-global NoteFor      := ""        ; the note box is open for {id, day}
+global NoteFor      := ""        ; the note box is open for {id, day[, drop]}
 global StateNoSave  := 0         ; the state file could not be read OR set aside
 
 ; ---- runtime ---------------------------------------------------------------
 global StateFile    := A_ScriptDir "\Daybook-state.txt"
 global PanelHwnd, CapHwnd, NoteHwnd
+global OpenMissed   := 1         ; the MISSED section - list code "M", see Missed.ahk
 global OpenToday    := 1
 global OpenLong     := 0         ; the LONG TERM TASKS section - list code "L"
 global OpenStats    := 0
@@ -66,7 +66,8 @@ global BreakMode    := 0         ; you pressed Win+F1: ground truth beats sensor
 global BreakStart   := 0
 global AwayIdleMs   := 0
 global LastClickTick := 0        ; last mouse click or wheel event, see IdleMs()
-global ReviewIdx    := 0
+global MissMenuId   := 0         ; the task the "did it on..." menu is for
+global MissMenuDays := {}        ; that menu's item -> day
 global MenuTask     := 0
 global MenuHabit    := 0
 global CapList      := "T"       ; which list the capture box was opened for

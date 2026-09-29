@@ -50,6 +50,15 @@ BoardRender() {
     s .= " Change things on the panel - anything typed here is replaced. Each"
     s .= " day's own note has that day in full.`n"
 
+    ; missed only while something is in it, as on the panel
+    lines := ""
+    for _, t in Tasks
+        if (t.list = "M")
+            lines .= "- " Chr(0x2610) " " t.text "  " Chr(0x00B7) " missed "
+                  .  MissSinceText(t.since) "  " Chr(0x00B7) " " Chr(0xD7) t.carry "`n"
+    if (lines != "")
+        s .= "`n## missed`n`n" lines
+
     for _, sect in [["T", "today"], ["L", "long term"]] {
         s .= "`n## " sect[2] "`n`n"
         n := 0
@@ -81,9 +90,12 @@ BoardRender() {
     for _, h in Habits {
         s .= "| " h.text " |"
         Loop 14 {
+            ; a cross only where the panel shows red - a day the rule allowed
+            ; off is a dash, a rest day the snowflake the day note uses
             st := HabitDayState(h, DayShift(today, A_Index - 14), today)
             s .= " " ((st = "done") ? Chr(0x2705) : (st = "none") ? " "
-                    : (st = "todo") ? Chr(0x2B1C) : Chr(0x274C)) " |"
+                    : (st = "todo") ? Chr(0x2B1C) : (st = "off") ? Chr(0x2013)
+                    : (st = "rest") ? Chr(0x2744) : Chr(0x274C)) " |"
         }
         s .= "`n"
     }

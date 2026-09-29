@@ -247,9 +247,8 @@
 ;================================================================================
 ; NOT IN THIS VERSION (the structure is here, the behaviour is not)
 ;================================================================================
-;   - per-task due times. Task records already carry .due and .asked, and
-;     ReviewItem() takes a single task so a due-time timer can call it directly
-;     instead of only rollover doing so.
+;   - per-task due times. Task records already carry .due and .asked for
+;     them.
 ;   - drop shadows. The corners turned out to be free - Windows 11 will round
 ;     a frameless window if you ask it to, see ApplyPanelShape() - but a shadow
 ;     still needs the whole panel drawn as one GDI+ layered bitmap, and

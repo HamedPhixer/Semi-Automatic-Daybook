@@ -22,6 +22,12 @@ TopClick:
     ToggleOnTop()
 Return
 
+ToggleMissed:
+    OpenMissed := !OpenMissed
+    SaveIni()
+    Relayout()
+Return
+
 ToggleToday:
     OpenToday := !OpenToday
     SaveIni()
@@ -46,13 +52,8 @@ ToggleHabits:
     Relayout()
 Return
 
-; The + carries what the separate dot used to: if yesterday is still owed an
-; answer, pressing it starts that review; otherwise it just opens capture.
 AddClick:
-    if (ReviewQueue.Length())
-        StartReview()
-    else
-        QuickAdd("T")
+    QuickAdd("T")
 Return
 
 LongAddClick:
@@ -80,6 +81,12 @@ Return
 
 RowXClick:
     RowAction(SubStr(A_GuiControl, 5), "failed")
+Return
+
+; only on a MISSED row: back onto Today's list
+RowGoClick:
+    if ((goTask := RowTask[SubStr(A_GuiControl, 6)]) && Tasks[goTask].list = "M")
+        MissToToday(goTask)
 Return
 
 ; Right-click anywhere on a row.
@@ -125,6 +132,15 @@ RowAction(n, status) {
     i := RowTask[n]
     if (!i || !Tasks[i])
         return
+    ; A MISSED task is not ticked or crossed where it stands - the tick asks
+    ; which day, the cross asks before it drops. See Missed.ahk.
+    if (Tasks[i].list = "M") {
+        if (status = "done")
+            MissDidMenu(i)
+        else
+            MissDropAsk(i, RowY[n])
+        return
+    }
     if (Tasks[i].status = status) {          ; clicking the same mark undoes it
         ; Inside the grace window nothing was written, so nothing is. Past it
         ; the mark is on disk, and the honest thing is to say it was taken back
@@ -209,8 +225,10 @@ RowMenu(i) {
     Menu, Row, Add, placeholder, MenuNoop     ; so DeleteAll cannot fail first time
     Menu, Row, DeleteAll
     Menu, Row, Add, Rename, MenuRename
-    Menu, Row, Add, % (TaskNote(Tasks[i], CurDay) != "" ? "Edit note" : "Add a note"), MenuNote
-    Menu, Row, Add, % (Tasks[i].list = "T" ? "Move to Long term" : "Move to Today"), MenuMove
+    ; a MISSED task's note is asked for by its buttons, about the day it missed
+    if (Tasks[i].list != "M")
+        Menu, Row, Add, % (TaskNote(Tasks[i], CurDay) != "" ? "Edit note" : "Add a note"), MenuNote
+    Menu, Row, Add, % (Tasks[i].list = "L" ? "Move to Today" : "Move to Long term"), MenuMove
     Menu, Row, Add, Delete, MenuDelete
     Menu, Row, Show
 }
@@ -252,7 +270,7 @@ MenuNote:
 Return
 
 MenuMove:
-    Tasks[MenuTask].list := (Tasks[MenuTask].list = "T") ? "L" : "T"
+    Tasks[MenuTask].list := (Tasks[MenuTask].list = "L") ? "T" : "L"
     SaveState()
     Refresh()
 Return
@@ -350,6 +368,10 @@ HoverTip(card) {
     GuiControlGet, p, Panel:Pos, %ctrl%
     tip := (text != "" && TextWidth(hwnd, text) > pW) ? text : ""
     if (c.kind = "T" && (t := Tasks[RowTask[c.pool]])) {
+        ; a MISSED row says since when, and what its three buttons do
+        if (t.list = "M")
+            tip .= (tip != "" ? "`n" : "") "missed " MissSinceText(t.since) "   "
+                .  Chr(0x2713) " did it   " Chr(0x2715) " drop   " Chr(0x2193) " to today"
         note := TaskNote(t, CurDay)
         if (note != "")
             tip .= (tip != "" ? "`n" : "") Chr(0x270E) " " WrapText(note, 60)

@@ -17,7 +17,7 @@ global IniFile := CfgSeed(A_ScriptDir "\Daybook.ini", DaybookIniTemplate())
 
 ; Shown in the settings window and in the tray tip. MAJOR.MINOR.PATCH; a dash
 ; on the end makes it a test build, the way Vocab does it.
-global DaybookVersion := "0.9.0-beta.2"
+global DaybookVersion := "0.9.0-beta.3"
 
 ; Read a SECOND time here, and on purpose. Daybook.ahk has to know this before
 ; a single one of these files is loaded - deciding whether to relaunch itself
@@ -102,7 +102,7 @@ global CardR         := HdrNumR - Indent     ; 270 at the default width
 global RowH          := 26       ; card height
 global RowGap        := 4
 global MaxRows       := 10       ; per list before it stops drawing
-global RowPool       := 22       ; controls pre-made for rows; the two lists
+global RowPool       := 32       ; controls pre-made for rows; the three lists
                                  ; share them, so this is the total on screen
 ; Habit rows have their own pool - three controls each, and a shape nothing
 ; else on the panel has. A habit you never do is still a habit, so the list

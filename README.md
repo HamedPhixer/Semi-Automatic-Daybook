@@ -21,7 +21,8 @@ away. Right-click a habit for its calendar, where you can also bring in a
 streak you kept somewhere else.
 
 **Tasks.** One list for today, one for later. Tick or cross one and a small box
-opens to say why. Anything unfinished carries to tomorrow and asks.
+opens to say why. Anything unfinished waits under MISSED: say which day you did
+it, drop it, or put it back on today.
 
 **A sit timer.** Green, amber at 30 minutes, red and breathing at 45. It only
 counts time you were there: it watches Windows' own display state, so a film

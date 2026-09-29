@@ -3,6 +3,24 @@
 Notable changes, newest first. The version is in `lib\Config.ahk`
 (`DaybookVersion`).
 
+## 0.9.0-beta.3
+
+- **Missed tasks** - unfinished tasks wait in their own section: did it (on which day), drop, or back to today.
+- **One question, not a queue** - bringing a task back asks why once, however long it waited.
+- **Weekly habits show red** from the day a week can no longer be made.
+
+<details>
+<summary>Everything that changed</summary>
+
+- Tasks already carried over move to Missed the first time this version starts.
+- A "why?" answer goes on the day the task was meant for.
+- Dropping a missed task asks first, and Esc keeps it.
+- The ×N count sits in front of the name and counts days left undone.
+- The + is amber only when today's list is empty; the old "why not?" review is gone.
+- Daybook.md shows the missed list, and its habit grid no longer marks days off or rest days with a cross.
+
+</details>
+
 ## 0.9.0-beta.2
 
 - **Day notes are a summary** - your writing on top, Daybook's block of the day below.

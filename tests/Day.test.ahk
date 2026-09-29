@@ -13,7 +13,7 @@ SetBatchLines -1
 
 global DayStartHour := 3, HabitKeep := 372, HabitDays := 7, PastKeepDays := 42
 global JournalOn := 1, BoardOn := 1, JournalDir := A_ScriptDir "\journal\day"
-global Tasks := [], Habits := [], Past := [], PastTime := {}, ReviewQueue := []
+global Tasks := [], Habits := [], Past := [], PastTime := {}, NoteFor := ""
 global CurDay := "", NextTaskId := 1
 global AppSec := {}, HourSec := {}, LogApps := 1, SampleMs := 30000, StatsTop := 8
 global SitSec := 0, AwaySec := 0, CutShort := 0
@@ -37,6 +37,16 @@ PendMark(kind, i, status) {
 }
 Present() {
     return true
+}
+; the note box: remembered, so a test can say what it was asked
+global Asked := ""
+ShowNote(header, rowY := 0, prefill := "", hint := "") {
+    global Asked
+    Asked := header
+}
+OpenNote(i, mode, rowY := 0) {
+    global Asked
+    Asked := "note " mode
 }
 
 #Include %A_ScriptDir%\..\lib\Day.ahk
@@ -62,6 +72,10 @@ Hasnt(name, hay, needle) {
 Count(hay, needle) {
     StrReplace(hay, needle, needle, n)
     return n
+}
+; What SaveNote does with Enter, without the box.
+SaveNote_(id, day, txt) {
+    TaskSetNote(id, day, txt)
 }
 Note(day) {
     FileRead, s, % "*P65001 " JournalFile(day)
@@ -135,18 +149,29 @@ Ok("only the unfinished stay",       Tasks.Length(), 1)
 Ok("and it is the open one",         Tasks[1].text, "call mom")
 Ok("carried",                        Tasks[1].carry, 1)
 Ok("the day is kept",                Past.Length(), 4)
-Ok("a question is owed, about yday", ReviewQueue[1].day, yday)
+Ok("the open one is missed",         Tasks[1].list, "M")
+Ok("  since the day it was meant for", Tasks[1].since, yday)
+mom := Tasks[1].id
 f := Note(yday)
 Has("closed note: still open",       f, "- " box " call mom`n")
 Has("closed note: time kept",        f, "active 2h 0m")
 Ok("closed note: your words still once", Count(f, "A long day. I liked it."), 1)
 t := Note(today)
 Has("today's note made",             t, "# " today "`n`n## my notes")
-Has("today: the carried task",       t, "- " box " call mom  " dot " carried " Chr(0xD7) "2`n")
+Hasnt("today: a missed task is not on today's list", t, "call mom")
 Hasnt("today: not yesterday's done", t, "buy milk")
 
-; ---- the answer to "why not?", the next morning, goes onto that day ---------
-TaskSetNote(ReviewQueue[1].id, yday, "ran out of time")
+; ---- the board shows it waiting ----------------------------------------------
+b := ""
+FileRead, b, % "*P65001 " JournalDir "\Daybook.md"
+Has("board: missed, and since when", b, "## missed`n`n- " box " call mom  " dot " missed yesterday  " dot " " Chr(0xD7) "1`n")
+
+; ---- back onto Today: one question, and the answer goes onto yday -----------
+MissToToday(1)
+Ok("back on today",                  Tasks[1].list, "T")
+Has("  asked why, about yesterday",  Asked, "not done yesterday - why?")
+Ok("  it is still carried",          Tasks[1].carry, 1)
+SaveNote_(mom, yday, "ran out of time")
 f := Note(yday)
 Has("answer on yesterday's line",    f, "- " box " call mom  " dash " ran out of time`n")
 Ok("and your words are still there", Count(f, "A long day. I liked it."), 1)
@@ -154,7 +179,7 @@ Hasnt("not on today's",              Note(today), "ran out of time")
 
 ; ---- a note today, edited, then taken away -----------------------------------
 TaskSetNote(Tasks[1].id, today, "ring after six")
-Has("today: note on the task",       Note(today), "carried " Chr(0xD7) "2  " dash " ring after six`n")
+Has("today: note on the task",       Note(today), "- " box " call mom  " dot " carried " Chr(0xD7) "1  " dash " ring after six`n")
 TaskSetNote(Tasks[1].id, today, "")
 Hasnt("today: note taken away",      Note(today), "ring after six")
 
@@ -191,10 +216,53 @@ JournalOn := 1
 ; ---- a note read short is never written back --------------------------------
 cut := "# " yday "`n`n## my notes`n`nhalf a thought`n`n%% daybook: written by Daybook and rewr"
 Put(yday, cut)
-TaskSetNote(ReviewQueue[1].id, yday, "a later answer")     ; wants to rewrite it
+TaskSetNote(mom, yday, "a later answer")     ; wants to rewrite it
 Ok("cut note: left exactly as found", Note(yday) == cut ? 1 : 0, 1)
 Ok("the note was copied aside before Daybook first touched it"
   , FileExist(A_ScriptDir "\journal\backups\notes\" yday ".md") ? 1 : 0, 1)
+
+; ---- did it, on an earlier day -------------------------------------------------
+; Put back as it was: missed since yday, and the note there whole again.
+Put(yday, "# " yday "`n`n## my notes`n`nA long day. I liked it.`n`n" DayMarkStart() "`n" DayMarkEnd() "`n")
+DayNoteWrite(yday, true)
+i := TaskIndex(mom), Tasks[i].list := "M", Tasks[i].since := yday
+MissDone(mom, yday)
+Ok("done on yday: off the panel",    TaskIndex(mom), 0)
+Has("  and ticked in yday's note",   Note(yday), "- " tick " call mom")
+Has("  the box asks about that day", Asked, "done yesterday")
+SaveNote_(mom, yday, "did it after all")
+Has("  its note lands there",        Note(yday), "- " tick " call mom  " dash " did it after all`n")
+
+; ---- did it today -------------------------------------------------------------
+CurDay := today
+AddTask("post the letter")
+k := Tasks.Length(), lid := Tasks[k].id
+Tasks[k].list := "M", Tasks[k].since := yday, Tasks[k].carry := 1
+MissDone(lid, today)
+Ok("done today: on Today's list, ticked", Tasks[k].list " " Tasks[k].status, "T done")
+Ok("  the usual note box",           Asked, "note done")
+
+; ---- dropped: Esc keeps it, Enter drops it with its reason ------------------
+AddTask("paint the fence")
+k := Tasks.Length(), fid := Tasks[k].id
+Tasks[k].list := "M", Tasks[k].since := yday, Tasks[k].carry := 1
+Past.Push({day: yday, id: fid, list: "T", status: "open", carry: 0, note: "", text: "paint the fence"})
+MissDropAsk(k)
+Ok("drop asks first",                NoteFor.drop ? 1 : 0, 1)
+NoteFor := ""                        ; Esc
+Ok("  Esc keeps it",                 TaskIndex(fid) ? 1 : 0, 1)
+MissDropNow(fid, yday, "rained all week")
+Ok("  Enter drops it",               TaskIndex(fid), 0)
+Has("  crossed on the day it was meant for, with why", Note(yday), "- " cross " paint the fence  " dash " rained all week`n")
+
+; ---- a missed task waits, and its count goes up with the days --------------
+AddTask("sort the photos")
+k := Tasks.Length(), pid := Tasks[k].id
+CurDay := d2                         ; pretend today's list was two days ago
+RollIfNeeded()
+i := TaskIndex(pid)
+Ok("two days gone: missed, x2",      Tasks[i].list " " Tasks[i].carry, "M 2")
+Ok("  since the day it was on",      Tasks[i].since, d2)
 
 ; ---- old days are let go -----------------------------------------------------
 Past.Push({day: DayShift(today, -60), id: 99, list: "T", status: "done", carry: 0, note: "", text: "long ago"})
@@ -212,3 +280,6 @@ FileDelete, %A_ScriptDir%\results-Day.txt
 FileAppend, % (Fails ? Fails " FAILED`n" : "all passed`n") Log
     , %A_ScriptDir%\results-Day.txt, UTF-8
 ExitApp
+
+; last: it has a menu label, which would end the auto-execute section above
+#Include %A_ScriptDir%\..\lib\Missed.ahk

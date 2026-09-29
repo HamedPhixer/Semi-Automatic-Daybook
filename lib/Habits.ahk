@@ -607,8 +607,10 @@ HabitsDone() {
 
 ; What one dot means. "none" is a day before the habit existed and is not drawn
 ; at all - a habit added on Thursday has nothing to say about Monday. "off" is
-; a day not done that the rule allowed - every other day's day off, or any day
-; of a week-counted habit - and is grey, not red: red means the chain broke.
+; a day not done that the rule allowed - every other day's day off, or a day of
+; a week that can still be kept - and is grey, not red: red means the chain
+; broke. For a week-counted habit that is the day the week could no longer be
+; made, and every undone day after it that week.
 HabitDayState(h, day, today) {
     if (day < h.born)
         return "none"
@@ -618,9 +620,24 @@ HabitDayState(h, day, today) {
         return "rest"
     if (day = today)
         return "todo"
-    if (h.kind = "W" || !HabitBrokenBy(h, day))
+    if (h.kind = "W" ? !HabitWeekLost(h, day) : !HabitBrokenBy(h, day))
         return "off"
     return (day = DayShift(today, -1)) ? "miss" : "old"
+}
+
+; By the end of this day, could its week still reach its target? Done so far,
+; plus every day left in the week that is not a rest day, against what the week
+; needs. Three a week and nothing by Friday night: Friday is where it was lost.
+HabitWeekLost(h, day) {
+    p := HabitWeekProgress(h, day)
+    num := DayNum(day)
+    left := 0, d := day
+    Loop % WeekOf(num) * 7 + 8 - num {           ; the days after it, to Sunday
+        d := DayShift(d, 1)
+        if (!HabitRested(h, d))
+            left++
+    }
+    return p.done + left < p.need
 }
 
 ; Yesterday is the one that stings, so it keeps the full red. Older misses fade

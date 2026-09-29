@@ -183,6 +183,24 @@ HabitInsertDay(g.done, "2026-09-23")
 HabitCompute(g)
 Ok("kept either side of a bridge: 2", g.streak, 2)
 
+; red in a week-counted habit: the day the week can no longer be made, and the
+; undone days after it. 3 a week, the week of the 14th: nothing Mon to Thu.
+FakeToday := "2026-09-21"
+k := Make("yoga", "W", 3, "2026-09-07", "07,09,11,19")
+Ok("a lost week: Thursday could still be made", HabitDayState(k, "2026-09-17", FakeToday), "off")
+Ok("  Friday is where it was lost",   HabitDayState(k, "2026-09-18", FakeToday), "old")
+Ok("  Saturday done is still green",  HabitDayState(k, "2026-09-19", FakeToday), "done")
+Ok("  Sunday undone is red too",      HabitDayState(k, "2026-09-20", FakeToday), "miss")
+; a rest day on Thursday takes the target to 2, and Sat + Sun could make it
+HabitInsertDay(k.rest, "2026-09-17")
+HabitCompute(k)
+Ok("a rest day moves the red later",  HabitDayState(k, "2026-09-18", FakeToday), "off")
+Ok("  to the Sunday that was not done", HabitDayState(k, "2026-09-20", FakeToday), "miss")
+; the open week goes red mid-week, not only once Sunday is over
+FakeToday := "2026-10-03"
+Ok("mid-week: Friday lost, seen on Saturday", HabitDayState(k, "2026-10-02", FakeToday), "miss")
+Ok("  and Thursday stays grey",       HabitDayState(k, "2026-10-01", FakeToday), "off")
+
 ; ---- changing the rule ------------------------------------------------------------
 FakeToday := "2026-09-13"
 c := Make("walk", "D", 1, "2026-09-01", "01,03,05,07,09,11,13")

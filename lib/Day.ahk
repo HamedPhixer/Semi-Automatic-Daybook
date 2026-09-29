@@ -19,6 +19,24 @@ DayShift(day, n) {
     return d
 }
 
+; A day as it is said: "today", "yesterday", "Sat 26 Sep".
+MissDayName(day) {
+    today := LogicalDay()
+    if (day = today)
+        return "today"
+    if (day = DayShift(today, -1))
+        return "yesterday"
+    FormatTime, s, % StrReplace(day, "-"), ddd d MMM
+    return s
+}
+
+; How long a MISSED task has waited: "yesterday", or "since Sat 26 Sep".
+MissSinceText(day) {
+    if (day = "" || day = DayShift(LogicalDay(), -1))
+        return "yesterday"
+    return "since " MissDayName(day)
+}
+
 RollIfNeeded() {
     CommitMark()                 ; a pending mark belongs to the day it happened
     today := LogicalDay()
@@ -46,13 +64,18 @@ RollIfNeeded() {
 ; line, not into a new one. Everything on Today's list goes in, and a long term
 ; task only if it was finished that day.
 ;
-; Unfinished work is never deleted: it stays, its carry count goes up, and it
-; joins the review queue - knowing which day it belongs to - so the amber + has
-; something to ask about. Finished work leaves the panel, long term included:
-; it is done, and the note has it.
+; Unfinished work is never deleted. What was on Today's list and is still open
+; moves to MISSED, remembering this as the day it was meant for (since), and
+; waits there to be told what happened - see Missed.ahk. Its carry count, and
+; that of anything already waiting in MISSED, goes up by the days gone by: a
+; week with the PC off is a week, not one day. Finished work leaves the panel,
+; long term included: it is done, and the note has it.
 CloseDay() {
-    global Tasks, Past, PastTime, ReviewQueue, CurDay
+    global Tasks, Past, PastTime, CurDay
     day := CurDay
+    gap := DayNum(LogicalDay()) - DayNum(day)
+    if (gap < 1)
+        gap := 1
     ; A long term task finished before tasks remembered WHEN they were
     ; finished has no doneOn; it leaves the panel now like the rest, so it is
     ; recorded on this day rather than vanishing without a trace.
@@ -62,19 +85,18 @@ CloseDay() {
                      , carry: t.carry, note: TaskNote(t, day), text: t.text})
     PastTime[day] := DayTimeText()
     DayNoteWrite(day, true)              ; the last word, time and all
-    open := [], keep := []
+    keep := []
     for _, t in Tasks {
         if (t.status != "open")
             continue
-        if (t.list = "T") {
-            t.carry += 1
-            open.Push({day: day, id: t.id, text: t.text})
-        }
+        if (t.list = "T")
+            t.list := "M", t.since := day, t.carry += gap
+        else if (t.list = "M")
+            t.carry += gap
         t.notes := {}                    ; the day's notes are in Past now
         keep.Push(t)
     }
     Tasks := keep
-    ReviewQueue := open
     PastPrune()
 }
 

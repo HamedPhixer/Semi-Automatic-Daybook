@@ -35,13 +35,20 @@ BuildPanel() {
     ;      and the caret in front of it says which way it is. That frees the
     ;      whole right-hand column, so + sits at the edge and the numbers line
     ;      up in one column under it.
+    ; MISSED has no +: nothing is added to it by hand, a day's end puts things
+    ; there. Its heading is amber, and it is not on the panel while it is empty.
+    Gui, Panel:Font, s9 Bold, Segoe UI
+    Gui, Panel:Add, Text, vMissHdr gToggleMissed x12 y36 w160 h17 c%CAmber% BackgroundTrans, MISSED
+    Gui, Panel:Font, s8 Norm, Segoe UI
+    Gui, Panel:Add, Text, vMissCnt x176 y38 w26 h14 Center c%CAmber% BackgroundTrans,
+
     Gui, Panel:Font, s9 Bold, Segoe UI
     Gui, Panel:Add, Text, vTodayHdr gToggleToday x12 y36 w160 h17 c%CText% BackgroundTrans, TODAY
     Gui, Panel:Font, s8 Norm, Segoe UI
     Gui, Panel:Add, Text, vTodayCnt x176 y38 w26 h14 Center c%CMuted% BackgroundTrans,
     Gui, Panel:Font, s12 Norm, Segoe UI
     ; the + doubles as the "I need something from you" light: it turns amber
-    ; when the list is empty or yesterday is still unanswered
+    ; when the list is empty
     Gui, Panel:Add, Text, vAddBtn gAddClick x266 y34 w24 h20 Right c%CMuted% BackgroundTrans, +
 
     Gui, Panel:Font, s9 Bold, Segoe UI
@@ -106,6 +113,8 @@ BuildPanel() {
         Gui, Panel:Add, Text, vRowChk%n% gRowChkClick x26 y400 w22 h%RowH% Center c%CMuted% BackgroundTrans +0x200,
         Gui, Panel:Font, s9 Norm, Segoe UI
         Gui, Panel:Add, Text, vRowX%n%   gRowXClick   x50 y400 w18 h%RowH% Center c%CDim%   BackgroundTrans +0x200, % Chr(0x2715)
+        ; a MISSED row's third button: back onto Today's list, which is below
+        Gui, Panel:Add, Text, vRowGo%n%  gRowGoClick  x70 y400 w18 h%RowH% Center c%CDim%   BackgroundTrans +0x200, % Chr(0x2193)
         ; +0x4000 is SS_ENDELLIPSIS: a name longer than the card ends in "..."
         ; drawn by Windows, instead of being cut mid-letter with nothing to
         ; say so. The whole of it is on hover - see HoverTip().

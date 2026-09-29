@@ -28,8 +28,8 @@ SaveState() {
     global NextTaskId
     ; The first line says this file was written with an end line, so one that
     ; has it and not the end is known to be cut short. The version before skips
-    ; a line it does not know.
-    s := "daybook-state`t2`n"
+    ; a line it does not know. 3 is the first with a MISSED list - see LoadState.
+    s := "daybook-state`t3`n"
     s .= "day`t" CurDay "`n"
     s .= "sit`t" SitSec "`n"
     s .= "tid`t" NextTaskId "`n"
@@ -37,10 +37,10 @@ SaveState() {
     ; so a file written now still reads correctly in the version before - that
     ; one stops at the text and never looks further. Text cannot hold a tab
     ; (AddTask and RenameTask take them out), so nothing can push it along.
-    ; doneOn went after the id the same way, and a task's notes each have a
-    ; line of their own after it: tnote, id, day, text.
+    ; doneOn went after the id the same way, then since, and a task's notes
+    ; each have a line of their own after it: tnote, id, day, text.
     for _, t in Tasks {
-        s .= "task`t" t.list "`t" t.status "`t" t.carry "`t" t.born "`t" t.due "`t" t.text "`t" t.id "`t" t.doneOn "`n"
+        s .= "task`t" t.list "`t" t.status "`t" t.carry "`t" t.born "`t" t.due "`t" t.text "`t" t.id "`t" t.doneOn "`t" t.since "`n"
         for day, note in t.notes
             s .= "tnote`t" t.id "`t" day "`t" note "`n"
     }
@@ -59,10 +59,6 @@ SaveState() {
             rests .= (rests ? "," : "") d
         s .= "hrule`t" h.kind "`t" h.n "`t" rests "`t" (h.unit = "D" ? "D" : "W") "`n"
     }
-    ; The text stays in second place, where the version before looks for it;
-    ; the day and the task it is about come after.
-    for _, r in ReviewQueue
-        s .= "review`t" r.text "`t" r.day "`t" r.id "`n"
     ; Finished days, for as long as they are kept - see CloseDay().
     for _, r in Past
         s .= "past`t" r.day "`t" r.id "`t" r.list "`t" r.status "`t" r.carry "`t" r.note "`t" r.text "`n"
@@ -255,13 +251,15 @@ LoadState() {
     s := StateReadOrRecover()
     if (s = "")
         return
-    notes := []
+    notes := [], ver := 0
     Loop, Parse, s, `n, `r
     {
         if (A_LoopField = "")
             continue
         StringSplit, p, A_LoopField, %A_Tab%
-        if (p1 = "day")
+        if (p1 = "daybook-state")
+            ver := p2 + 0
+        else if (p1 = "day")
             CurDay := p2
         else if (p1 = "sit")
             SitSec := p2 + 0
@@ -270,7 +268,8 @@ LoadState() {
         else if (p1 = "task")
             Tasks.Push({list: p2, status: p3, carry: p4 + 0, born: p5
                       , due: p6, text: p7, asked: 0, notes: {}
-                      , id: (p0 >= 8) ? p8 + 0 : 0, doneOn: (p0 >= 9) ? p9 : ""})
+                      , id: (p0 >= 8) ? p8 + 0 : 0, doneOn: (p0 >= 9) ? p9 : ""
+                      , since: (p0 >= 10) ? p10 : ""})
         else if (p1 = "tnote")
             notes.Push({id: p2 + 0, day: p3, text: p4})
         else if (p1 = "past")
@@ -294,8 +293,6 @@ LoadState() {
                 if (A_LoopField != "")
                     h.rest.Push(A_LoopField)
         }
-        else if (p1 = "review")
-            ReviewQueue.Push({text: p2, day: (p0 >= 3) ? p3 : "", id: (p0 >= 4) ? p4 + 0 : 0})
         else if (p1 = "app")
             AppSec[p2] := p3 + 0
         else if (p1 = "hour")
@@ -314,6 +311,19 @@ LoadState() {
     for _, n in notes
         if (i := TaskIndex(n.id))
             Tasks[i].notes[n.day] := n.text
+    ; Before MISSED, a task left open stayed on Today's list with its carry
+    ; count going up, and the "review" lines (now ignored) asked about it. Those
+    ; move to MISSED once, as if they had always been there, waiting since the
+    ; day they were added - the day they were meant for.
+    if (ver < 3)
+        for _, t in Tasks
+            if (t.list = "T" && t.status = "open" && t.carry > 0)
+                t.list := "M", t.since := (t.born != "" && t.born < CurDay) ? t.born
+                                         : DayShift(CurDay, -1)
+    ; and one saved half way through the change still has a day to answer for
+    for _, t in Tasks
+        if (t.list = "M" && t.since = "")
+            t.since := DayShift(CurDay, -1)
 }
 
 ; The panel's own state lives under [Saved], below the settings. It used to be
@@ -331,6 +341,7 @@ LoadIni() {
     IniRead, PanelX,    %IniFile%, Saved, X,         NONE
     IniRead, PanelY,    %IniFile%, Saved, Y,         NONE
     IniRead, OpenToday, %IniFile%, Saved, OpenToday, 1
+    IniRead, OpenMissed, %IniFile%, Saved, OpenMissed, 1
     ; LATER TASKS became LONG TERM TASKS. An .ini written before that still says
     ; OpenLater, so the old key answers when the new one is not there - the same
     ; way ClickThru answers for PanelMode below.
@@ -367,6 +378,7 @@ SaveIni() {
     IniWrite, %PanelX%,    %IniFile%, Saved, X
     IniWrite, %PanelY%,    %IniFile%, Saved, Y
     IniWrite, %OpenToday%, %IniFile%, Saved, OpenToday
+    IniWrite, %OpenMissed%, %IniFile%, Saved, OpenMissed
     IniWrite, %OpenLong%,  %IniFile%, Saved, OpenLong
     IniWrite, %OpenStats%, %IniFile%, Saved, OpenStats
     IniWrite, %OpenHabits%, %IniFile%, Saved, OpenHabits

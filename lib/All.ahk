@@ -28,7 +28,7 @@
 ;   Events     what a click on any of it does
 ;   Capture    the box you type a new task into
 ;   Note       the box that opens beside a task you just marked
-;   Review     yesterday's unfinished work, asked about one at a time
+;   Missed     what a day ended without: did it, drop it, or back to today
 ;   SettingsWin  the settings window
 ;   Tray       the tray icon's menu, and leaving tidily
 ;   Ini        the commented Daybook.ini written on the first run
@@ -57,7 +57,7 @@
 #Include %A_LineFile%\..\Events.ahk
 #Include %A_LineFile%\..\Capture.ahk
 #Include %A_LineFile%\..\Note.ahk
-#Include %A_LineFile%\..\Review.ahk
+#Include %A_LineFile%\..\Missed.ahk
 #Include %A_LineFile%\..\SettingsWin.ahk
 #Include %A_LineFile%\..\HabitWin.ahk
 #Include %A_LineFile%\..\Tray.ahk

@@ -190,8 +190,8 @@ DayTaskLine(r) {
     s := "- " mark " " r.text
     if (r.list = "L")
         s .= "  " Chr(0x00B7) " long term"
-    if (r.status = "open" && r.carry > 0)
-        s .= "  " Chr(0x00B7) " carried " Chr(0xD7) (r.carry + 1)
+    if (r.status = "open" && r.carry > 0)     ; days it had already been left undone
+        s .= "  " Chr(0x00B7) " carried " Chr(0xD7) r.carry
     if (r.note != "")
         s .= "  " Chr(0x2014) " " r.note
     return s

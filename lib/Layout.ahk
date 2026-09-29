@@ -1,8 +1,8 @@
 ﻿;================================================================================
 ; Laying the panel out - where every section and row ends up
 ;================================================================================
-; Lay out whatever is open, top to bottom: HABITS, TODAY'S TASKS, LONG TERM
-; TASKS, TIME AT THE MACHINE.
+; Lay out whatever is open, top to bottom: HABITS, MISSED (only when there is
+; something in it), TODAY'S TASKS, LONG TERM TASKS, TIME AT THE MACHINE.
 ;
 ; Habits come first because they are the part that is the same every morning -
 ; a list you glance at and clear, above the list you think about. The two task
@@ -53,6 +53,19 @@ Relayout() {
     Loop % HabPool {
         if (A_Index > habUsed)
             HideHab(A_Index)
+    }
+
+    ; ---- Missed - just above Today, because what it asks is what goes on it
+    if (nMiss) {
+        PlaceHdr(y, 20, {"MissHdr": "y" y
+                   , "MissCnt": "x" (HdrNumR - 102) " y" (y + 2) " w26"})
+        GuiControl, Panel:, MissHdr, % Caret(OpenMissed) " MISSED"
+        y += 22
+        if (OpenMissed)
+            used := PlaceRows("M", y, used)
+    } else {
+        GuiControl, Panel:Hide, MissHdr
+        GuiControl, Panel:Hide, MissCnt
     }
 
     ; ---- Today
@@ -281,10 +294,9 @@ PlaceRows(list, ByRef y, used) {
 
         done := (t.status = "done")
         fail := (t.status = "failed")
-        label := t.text
-        if (t.carry > 0)
-            label .= "   " Chr(0xD7) (t.carry + 1)
-
+        miss := (list = "M")
+        ; how many days it has been left undone, in front where it is seen
+        label := (t.carry > 0) ? Chr(0xD7) t.carry "  " t.text : t.text
 
         ; Each colour goes into a variable first: "+c%" only forces an
         ; expression when the % is the FIRST thing in the parameter, and here
@@ -304,7 +316,14 @@ PlaceRows(list, ByRef y, used) {
         GuiControl, Panel:, RowX%n%, % Chr(0x2715)
         GuiControl, Panel:Show, RowX%n%
 
-        GuiControl, Panel:Move, RowTxt%n%, % "x" (CardL + 52) " y" y " w" (CardR - CardL - 58)
+        if (miss) {
+            GuiControl, Panel:Move, RowGo%n%, % "x" (CardL + 50) " y" y
+            GuiControl, Panel:Show, RowGo%n%
+        } else
+            GuiControl, Panel:Hide, RowGo%n%
+
+        txtX := CardL + (miss ? 72 : 52)
+        GuiControl, Panel:Move, RowTxt%n%, % "x" txtX " y" y " w" (CardR - txtX - 6)
         GuiControl, Panel:+c%txtCol%, RowTxt%n%
         GuiControl, Panel:, RowTxt%n%, %label%
         GuiControl, Panel:Show, RowTxt%n%
@@ -319,6 +338,7 @@ PlaceRows(list, ByRef y, used) {
 HideRow(n) {
     GuiControl, Panel:Hide, RowChk%n%
     GuiControl, Panel:Hide, RowX%n%
+    GuiControl, Panel:Hide, RowGo%n%
     GuiControl, Panel:Hide, RowTxt%n%
 }
 
@@ -414,15 +434,18 @@ HideHab(n) {
 ; Recount, recolour the +, then lay out.
 Refresh() {
     global
-    nOpen := 0, nToday := 0, nLong := 0
+    nOpen := 0, nToday := 0, nLong := 0, nMiss := 0
     for _, t in Tasks {
         if (t.list = "T") {
             nToday++
             if (t.status = "open")
                 nOpen++
-        } else
+        } else if (t.list = "M")
+            nMiss++
+        else
             nLong++
     }
+    GuiControl, Panel:, MissCnt, %nMiss%
     GuiControl, Panel:, TodayCnt, %nOpen%
     GuiControl, Panel:, LongCnt, %nLong%
     ; Habits count DOWN to nothing left, which is the opposite of the task
@@ -438,9 +461,9 @@ Refresh() {
         GuiControl, Panel:+c%CMuted%, HabCnt
         GuiControl, Panel:, HabCnt,
     }
-    ; the + IS the indicator now: amber means there is something for you to
-    ; enter, either an empty list or yesterday still owing an answer
-    owed := ReviewQueue.Length() || (nToday = 0)
+    ; the + IS the indicator now: amber means the list is empty. What yesterday
+    ; left undone has a section of its own - MISSED - rather than a light.
+    owed := (nToday = 0)
     col := owed ? CAmber : CMuted
     GuiControl, Panel:+c%col%, AddBtn
     GuiControl, Panel:, AddBtn, +

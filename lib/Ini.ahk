@@ -130,6 +130,12 @@ MaxHeightPx=0
 ; Windows 10 has no such setting and ignores this either way.
 RoundedCorners=0
 
+; An ordinary window: a taskbar button, a place in Alt+Tab, and it takes
+; the keyboard when you click it. 0 is an overlay - none of those, and a
+; click never takes the keyboard from what you are in. Either way Daybook
+; never brings itself forward on its own: only you raise or restore it.
+Taskbar=1
+
 ; How faint the panel is in DIM and GHOST mode while the pointer is somewhere
 ; else, 0-255. Lower is fainter. SOLID is always fully opaque.
 FadedAlpha=125

@@ -371,8 +371,9 @@ LoadIni() {
 SaveIni() {
     global PanelX, PanelY
     if (PanelVisible) {
+        WinGet, mm, MinMax, ahk_id %PanelHwnd%
         WinGetPos, x, y, , , ahk_id %PanelHwnd%
-        if (x != "")
+        if (x != "" && mm != -1)             ; minimised, it is at -32000
             PanelX := x, PanelY := y
     }
     IniWrite, %PanelX%,    %IniFile%, Saved, X

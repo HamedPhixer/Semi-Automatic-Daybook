@@ -156,7 +156,12 @@ Relayout() {
     PlaceFoot(PanelFootLine)
 
     PanelH := panH
-    Gui, Panel:Show, NoActivate w%PanelW% h%panH%
+    ; A Show restores a minimised window and shows a hidden one - and this runs
+    ; on timers. Either would be Daybook bringing itself back on its own, so
+    ; it only sizes a panel that is up. Coming back lays out again anyway: see
+    ; ShowPanel() and PnlSize.
+    if (PanelVisible && !PanelIsMin())
+        Gui, Panel:Show, NoActivate w%PanelW% h%panH%
     ApplyPanelShape()
     ; Two repaint problems in one call. Moving or shrinking a control does not
     ; repaint the space it left, so a list that got shorter leaves its old rows

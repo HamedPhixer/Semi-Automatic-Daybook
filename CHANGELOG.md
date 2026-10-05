@@ -3,6 +3,21 @@
 Notable changes, newest first. The version is in `lib\Config.ahk`
 (`DaybookVersion`).
 
+## 1.0.0
+
+- **Out of beta.**
+- **A taskbar button and Alt+Tab** - the panel is an ordinary window; Settings > On the taskbar switches back to the overlay.
+- **Never pops up by itself** - timers and updates don't raise, restore or focus it.
+
+<details>
+<summary>Everything that changed</summary>
+
+- A minimised panel stays minimised; Win+F6 or its taskbar button brings it back.
+- A hidden panel no longer comes back on its own when the day rolls over.
+- Two settings hints no longer cut off.
+
+</details>
+
 ## 0.9.0-beta.3
 
 - **Missed tasks** - unfinished tasks wait in their own section: did it (on which day), drop, or back to today.

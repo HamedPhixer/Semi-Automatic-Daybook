@@ -1,15 +1,16 @@
 # Semi-Automatic Daybook
 
-An always-on-top day panel for Windows. Habits, tasks, and a sit timer that
+A day panel for Windows. Habits, tasks, and a sit timer that
 only counts time you were actually there - all of it written out as plain
 markdown, one file per day.
 
 Semi-automatic: it keeps the half of a journal that is counting, and leaves the
 half that is thinking to you.
 
-AutoHotkey v1 · Windows only · beta, it has only ever run on one machine
+AutoHotkey v1 · Windows only · **no internet, no account** - everything stays
+in two folders on your PC
 
-![The panel: habits with their streaks, today's tasks, long term tasks, and where the day went](https://raw.githubusercontent.com/HamedPhixer/Semi-Automatic-Daybook/main/docs/images/panel.png)
+![The panel: habits with their streaks, missed tasks, today's and long term tasks, and where the day went](https://raw.githubusercontent.com/HamedPhixer/Semi-Automatic-Daybook/main/docs/images/panel.png)
 
 ## What it does
 
@@ -19,6 +20,8 @@ ticked, for the evening you did the thing and forgot to say so. Every day,
 every few days, or so many times a week; rest days for when you are sick or
 away. Right-click a habit for its calendar, where you can also bring in a
 streak you kept somewhere else.
+
+![A habit's calendar: three times a week, every week kept, with the streak in weeks](https://raw.githubusercontent.com/HamedPhixer/Semi-Automatic-Daybook/main/docs/images/calendar.png)
 
 **Tasks.** One list for today, one for later. Tick or cross one and a small box
 opens to say why. Anything unfinished waits under MISSED: say which day you did
@@ -57,8 +60,12 @@ Amber at 30 minutes and red at 45, five minutes for a break: all settings.
 
 ## The journal
 
-One `YYYY-MM-DD.md` per day. The top is yours to write in; Daybook keeps a
-summary of the day at the bottom, and rewrites only that part:
+Plain markdown files, one `YYYY-MM-DD.md` per day, in `Documents\Daybook journal`
+unless you pick another folder. Notepad opens them; **Obsidian is optional** -
+point the folder at your vault and they show up there.
+
+The top of each note is yours to write in; Daybook keeps a summary of the day
+at the bottom, and rewrites only that part:
 
 ```
 ## my notes

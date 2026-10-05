@@ -68,12 +68,12 @@ SetupTable() {
     d.Push({kind: "head", label: "THE JOURNAL"})
     d.Push({kind: "bool", sect: "Journal", key: "Write", var: "JournalOn"
           , label: "Keep a journal"
-          , hint: "One note a day: your own writing on top, and Daybook's summary"
-                . " of the day under it. No: no notes are written at all."})
+          , hint: "A note a day: your writing on top, Daybook's summary under it."
+                . " No: nothing is written."})
     d.Push({kind: "bool", sect: "Journal", key: "Board", var: "BoardOn"
           , label: "Write Daybook.md"
-          , hint: "Where things stand, in the folder: your lists with their notes,"
-                . " the streaks, two weeks of habits. Rewritten as things change."})
+          , hint: "Where things stand: your lists, the streaks, two weeks of"
+                . " habits. Rewritten as things change."})
     d.Push({kind: "path", sect: "Journal", key: "Folder", var: "JournalDir"
           , label: "Folder", pick: "folder"
           , hint: "One YYYY-MM-DD.md per day goes here. It has to exist already"
@@ -150,6 +150,10 @@ SetupTable() {
           , label: "Rounded corners"
           , hint: "Every window here at once, this one included. Windows 10 has"
                 . " no such thing and ignores it."})
+    d.Push({kind: "bool", sect: "Look", key: "Taskbar", var: "PanelTaskbar"
+          , label: "On the taskbar"
+          , hint: "A taskbar button and Alt+Tab, like any window. Off, it is an"
+                . " overlay that never takes the keyboard."})
     d.Push({kind: "num", sect: "Look", key: "UndoSec", var: "MarkDelayMs", mul: 1000
           , label: "Undo window", unit: "seconds"
           , hint: "How long a tick or a cross stays yours to take back, before"
@@ -608,6 +612,7 @@ SetupApply() {
     SetupIcon()
     ApplyPanelMode()                      ; the faded alpha, applied at rest
     ApplyPanelShape()                     ; and the corners, on the panel
+    ApplyWindowKind()                     ; taskbar window or overlay
     ShapeWindow(SetupHwnd, PanelRound)    ; and on this window, as you watch
     EdgeState := -1, LastShownMin := 9999 ; make the bar and the digits repaint
     Refresh()

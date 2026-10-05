@@ -11,7 +11,12 @@
 ;================================================================================
 BuildPanel() {
     global
-    Gui, Panel:New, +AlwaysOnTop -Caption +ToolWindow +E0x08000000 +HwndPanelHwnd +LabelPnl
+    ; +MinimizeBox only so a taskbar click can minimise it - there is no
+    ; caption to show the box on. The overlay kind is a tool window instead,
+    ; which keeps it off the taskbar and out of Alt+Tab. See ApplyWindowKind().
+    Gui, Panel:New, % "+AlwaysOnTop -Caption +HwndPanelHwnd +LabelPnl "
+                   . (PanelTaskbar ? "+MinimizeBox" : "+ToolWindow +E0x08000000")
+    PanelKind := PanelTaskbar
     Gui, Panel:Margin, 0, 0
     Gui, Panel:Color, %CBg%
 

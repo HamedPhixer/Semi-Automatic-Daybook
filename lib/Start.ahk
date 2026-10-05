@@ -8,6 +8,7 @@
 ;================================================================================
 LoadIni()
 LoadState()
+SetTrayIcon()                ; first: the panel's taskbar button takes it
 BuildPanel()
 BuildCapture()
 BuildNote()

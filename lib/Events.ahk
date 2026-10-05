@@ -111,6 +111,18 @@ PnlContextMenu:
     }
 Return
 
+; Minimised from the taskbar, and back. While it is down nothing lays it out
+; (see the end of Relayout), so it is laid out once on the way back up - by
+; then it is where it will be, so the room below it is measured right.
+PnlSize:
+    if (A_EventInfo = 1)
+        PanelWasMin := 1
+    else if (PanelWasMin) {
+        PanelWasMin := 0
+        Relayout()
+    }
+Return
+
 ; Which card the pointer is over, as an index into Cards, or 0. Every card on
 ; the panel is in that one list whatever section it came from, so this answers
 ; for a habit exactly the way it answers for a task.
@@ -411,7 +423,9 @@ TextWidth(hwnd, text) {
 
 TogglePanel() {
     global PanelVisible
-    if (PanelVisible) {
+    if (PanelVisible && PanelIsMin())
+        ShowPanel()                     ; minimised: the key brings it back
+    else if (PanelVisible) {
         SaveIni()
         Gui, Panel:Hide
         PanelVisible := 0
@@ -423,7 +437,9 @@ TogglePanel() {
 ; back from hidden always lands on SOLID, the mode you can read and click.
 CyclePanel() {
     global PanelVisible, PanelMode
-    if (!PanelVisible) {
+    if (PanelVisible && PanelIsMin()) {
+        ShowPanel()                     ; minimised: back as it was, mode and all
+    } else if (!PanelVisible) {
         PanelMode := 0
         SetTrayMode()
         ShowPanel()                     ; applies the mode on its way up

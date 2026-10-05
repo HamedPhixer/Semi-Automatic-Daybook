@@ -47,18 +47,43 @@ ToggleOnTop() {
 ; crosses where it is. Nothing can be done about that without hit-testing every
 ; window above it, and it is a fair trade for the polling that makes GHOST mode
 ; possible at all.
+;
+; As an ordinary window (PanelTaskbar) it never has the flag: clicking a window
+; and having it take the keyboard is what a window does, on top or not.
 ApplyOnTop() {
-    global PanelOnTop, PanelHwnd
-    if (PanelOnTop) {
-        Gui, Panel:+AlwaysOnTop
-        WinSet, ExStyle, +0x08000000, ahk_id %PanelHwnd%
-    } else {
-        Gui, Panel:-AlwaysOnTop
-        WinSet, ExStyle, -0x08000000, ahk_id %PanelHwnd%
-    }
+    global PanelOnTop, PanelHwnd, PanelTaskbar
+    Gui, % "Panel:" (PanelOnTop ? "+" : "-") "AlwaysOnTop"
+    WinSet, ExStyle, % ((PanelOnTop && !PanelTaskbar) ? "+" : "-") "0x08000000"
+        , ahk_id %PanelHwnd%
     GuiControl, Panel:, ModeTxt, % ModeGlyph()
     SetFootBtns()
     SetTrayOnTop()
+}
+
+; Switch between the ordinary window and the overlay - [Look] Taskbar, from the
+; settings window. Windows only adds or removes a taskbar button when a window
+; is shown, so a visible panel is hidden and shown again around the change.
+ApplyWindowKind() {
+    global PanelTaskbar, PanelKind, PanelVisible
+    if (PanelKind = PanelTaskbar)
+        return
+    if (PanelVisible)
+        Gui, Panel:Hide
+    if (PanelTaskbar)
+        Gui, Panel:-ToolWindow +MinimizeBox
+    else
+        Gui, Panel:+ToolWindow -MinimizeBox
+    PanelKind := PanelTaskbar
+    ApplyOnTop()
+    if (PanelVisible)
+        Gui, Panel:Show, NoActivate
+}
+
+; Minimised from its taskbar button.
+PanelIsMin() {
+    global PanelHwnd
+    WinGet, mm, MinMax, ahk_id %PanelHwnd%
+    return (mm = -1)
 }
 
 ; SOLID / DIM / GHOST as a word. The tray menu is the only place the mode is

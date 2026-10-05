@@ -17,7 +17,7 @@ global IniFile := CfgSeed(A_ScriptDir "\Daybook.ini", DaybookIniTemplate())
 
 ; Shown in the settings window and in the tray tip. MAJOR.MINOR.PATCH; a dash
 ; on the end makes it a test build, the way Vocab does it.
-global DaybookVersion := "0.9.0-beta.3"
+global DaybookVersion := "1.0.0"
 
 ; Read a SECOND time here, and on purpose. Daybook.ahk has to know this before
 ; a single one of these files is loaded - deciding whether to relaunch itself
@@ -169,6 +169,15 @@ global PanelFootH    := 20
 ; asked, every time, and this one switch decides. See ShapeWindow(). Windows 10
 ; has no such attribute and ignores either request.
 global PanelRound    := CfgBool(IniFile, "Look", "RoundedCorners", false)
+
+; An ordinary window: a taskbar button, a place in Alt+Tab, focus when you
+; click it, and a taskbar click minimises it. 0 is the overlay it used to be -
+; none of those, and a click never takes the keyboard from what you are in.
+; Either way Daybook never brings itself forward: a timer running out, the
+; minutes moving, a day closing - none of it raises, restores or focuses the
+; panel. Only you do. See ApplyWindowKind().
+global PanelTaskbar  := CfgBool(IniFile, "Look", "Taskbar", true)
+global PanelKind     := ""        ; which of the two the window is right now
 
 ; ---- tray ------------------------------------------------------------------
 ; Your own tray icon - see [Files] in the .ini. A path that does not exist, or

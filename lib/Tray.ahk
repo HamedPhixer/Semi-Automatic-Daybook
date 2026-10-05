@@ -1,7 +1,9 @@
 ﻿;================================================================================
 ; Tray
 ;================================================================================
-BuildTray() {
+; Before the panel is built: a GUI window takes the tray icon it is created
+; with, and that is the icon on the panel's taskbar button.
+SetTrayIcon() {
     ; Your own image first, the built-in second. imageres.dll #20 is a lined pad
     ; with a tick on it - AHK numbers icons from 1, so it is what ExtractIconEx
     ; would call index 19.
@@ -15,6 +17,9 @@ BuildTray() {
     }
     if (!ok && FileExist(A_WinDir "\System32\imageres.dll"))
         Menu, Tray, Icon, %A_WinDir%\System32\imageres.dll, 20
+}
+
+BuildTray() {
     Menu, Tray, NoStandard
     Menu, Tray, Add, Show / hide panel, TrayToggle
     Menu, Tray, Add, I'm on a break, TrayBreak

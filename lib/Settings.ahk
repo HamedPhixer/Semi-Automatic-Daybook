@@ -1,9 +1,9 @@
 ﻿;================================================================================
 ; Settings.ahk - the settings file every script reads, and how it reads it
 ;================================================================================
-; #Include'd by MicControl.ahk, TTS.ahk, TimelapseRecorder.ahk, AudioSwitch.ahk,
-; MonitorPower.ahk and Hub.ahk. It holds no settings of its own - it is the
-; half-dozen functions they all need in order to have one.
+; Lives in AHK\lib and is #Include'd by every script in the AHK folder that has
+; a settings file. It holds no settings of its own - it is the half-dozen
+; functions they all need in order to have one.
 ;
 ; WHY THE SETTINGS LIVE IN A .INI AND NOT AT THE TOP OF EACH SCRIPT
 ;   They used to live at the top of each script, which meant changing one was
@@ -11,7 +11,7 @@
 ;   quoting right, and not break the file. Those scripts deliberately have no
 ;   "Edit Script" in their tray menu, so that was not even offered.
 ;
-;   Now each script seeds a plain .ini next to itself the first time it runs,
+;   Now each script seeds a plain .ini in its own folder the first time it runs,
 ;   with a comment above every setting saying what it does and what else it
 ;   will take, and its tray menu has one item that opens that file in Notepad.
 ;   Nothing in the .ini can stop a script from starting: a key that is missing,
@@ -59,22 +59,21 @@
 ;   So CfgSeed writes UTF-8-RAW - no BOM - and every template below is ASCII.
 ;================================================================================
 
-; The folder these .ini files live in: the one THIS file is in.
+; The folder a bare name's .ini lands in: the one THIS file is in.
 ;
-; A_LineFile, not A_ScriptDir, and the difference matters. AudioSwitch.ahk and
-; MonitorPower.ahk are #Include'd into Shortcuts.ahk, so A_ScriptDir means
-; "wherever the script that started us lives" - the same folder today, and
-; quietly not the same folder the day one of them is started from elsewhere.
-; A_LineFile is always this file.
+; In practice every script passes the whole path - each keeps its .ini in its
+; own folder, beside the script - so this is only the fallback. A_LineFile, not
+; A_ScriptDir: an #Include'd file's A_ScriptDir is the folder of whichever
+; script started the process, and A_LineFile is always this file.
 CfgDir() {
     return RegExReplace(A_LineFile, "\\[^\\]+$")
 }
 
-; CfgPath("MicControl") -> "...\MicControl.ini"
+; CfgPath("X") -> "<this file's folder>\X.ini"
 ;
-; A name that is already a path is handed straight back. Scripts that live in a
-; folder of their own - Daybook - keep their .ini beside the SCRIPT rather than
-; beside this file, and say so by passing the whole path.
+; A name that is already a path is handed straight back, which is how every
+; script uses it: the .ini beside the SCRIPT, not beside this file. A script
+; that is #Include'd builds that path from its own A_LineFile.
 CfgPath(name) {
     if (InStr(name, "\") || InStr(name, ":"))
         return name
@@ -82,7 +81,7 @@ CfgPath(name) {
 }
 
 ; Write the commented default file, once, if it is not there. Returns the path
-; either way, so callers can say  ini := CfgSeed("TTS", TtsIniTemplate()).
+; either way, so callers can say  ini := CfgSeed(dir "\TTS.ini", TtsIniTemplate()).
 ;
 ; Only ever called with a missing file, so it can never overwrite settings you
 ; have changed. A setting ADDED to a template later will not appear in an .ini

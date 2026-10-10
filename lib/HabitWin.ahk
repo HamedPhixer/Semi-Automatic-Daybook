@@ -53,6 +53,7 @@ HabEdBuild() {
     local W := 360, L := 20, cw := 34, ch := 28, gap := 4, y, k, r, opt, wx
     HabEdCells := []
     Gui, HabEd:New, +AlwaysOnTop -MaximizeBox -MinimizeBox +LabelHabEd +HwndHabEdHwnd, Daybook habit
+    TaskbarId(HabEdHwnd, "Ahk.Daybook")   ; under the panel's taskbar button
     Gui, HabEd:Margin, 0, 0
     Gui, HabEd:Color, %CBg%, %CCard%
 

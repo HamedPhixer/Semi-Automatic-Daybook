@@ -213,6 +213,7 @@ SetupBuild() {
     ; the window ignores Escape, ignores its own close button, and never hears
     ; that it has been resized. Panel.ahk says +LabelPnl for the same reason.
     Gui, Setup:New, +Resize -MaximizeBox +LabelSetup +HwndSetupHwnd, Daybook settings
+    TaskbarId(SetupHwnd, "Ahk.Daybook")   ; under the panel's taskbar button
     Gui, Setup:Margin, 0, 0
     ; the second colour is the one Edit controls use - see BuildCapture()
     Gui, Setup:Color, %CBg%, %CCard%

@@ -305,7 +305,10 @@ HoverCheck() {
         return
     CoordMode, Mouse, Screen
     MouseGetPos, mx, my
+    ; inside the rectangle AND not under another window - a panel buried under
+    ; your app must not light up, or tip, for a pointer that is on that app
     inside := (mx >= px && mx <= px + pw && my >= py && my <= py + ph)
+           && WindowSeenAt(PanelHwnd, mx, my)
 
     if (inside != Hot) {
         Hot := inside
@@ -353,13 +356,15 @@ DotHint(i, day) {
 ; says is noise. Laid directly under the row, so it reads as part of it.
 HoverTip(card) {
     global Cards, PanelHwnd, RowH, RowTask, CurDay
-    static last := 0, since := 0, shown := false
+    static last := 0, since := 0, shown := false, up := false
     if (card != last) {
         if (shown)
             ToolTip, , , , 7
-        last := card, since := A_TickCount, shown := false
+        last := card, since := A_TickCount, shown := false, up := false
         return
     }
+    if (up)
+        TipToFront()
     if (!card || shown || A_TickCount - since < 500)
         return
     shown := true                        ; asked once per rest, fits or not
@@ -370,6 +375,8 @@ HoverTip(card) {
             CoordMode, ToolTip, Screen
             MouseGetPos, mx, my
             ToolTip, %tip%, % mx + 12, % my + 18, 7
+            up := true
+            TipToFront()
         }
         return
     }
@@ -393,6 +400,20 @@ HoverTip(card) {
     WinGetPos, wx, wy, , , ahk_id %PanelHwnd%
     CoordMode, ToolTip, Screen
     ToolTip, %tip%, % wx + pX, % wy + c.y + RowH, 7
+    up := true
+    TipToFront()
+}
+
+; Keep the tip in front of the panel. Both are topmost windows while the panel
+; is on top, and between two topmost windows the one raised last wins - so a
+; Relayout's Gui,Show, landing while a tip is up, would lift the panel over the
+; tip that is laid across it. Asked again on every poll while the tip is up:
+; HWND_TOPMOST, without moving, sizing or activating it (0x13).
+TipToFront() {
+    pid := DllCall("GetCurrentProcessId")
+    if (tip := WinExist("ahk_class tooltips_class32 ahk_pid " pid))
+        DllCall("SetWindowPos", "Ptr", tip, "Ptr", -1
+            , "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", 0x13)
 }
 
 ; Break text into lines of about n characters at spaces. A tooltip does not

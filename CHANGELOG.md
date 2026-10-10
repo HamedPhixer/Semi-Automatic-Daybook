@@ -3,6 +3,20 @@
 Notable changes, newest first. The version is in `lib\Config.ahk`
 (`DaybookVersion`).
 
+## 1.0.1
+
+- **No tips through other windows** - a panel under another app no longer lights up, shows its tooltip or takes the mouse wheel.
+- **A taskbar button of its own** - no longer grouped with other AutoHotkey scripts' windows.
+- **Tips stay in front of the panel** while it is on top.
+
+<details>
+<summary>Everything that changed</summary>
+
+- The settings and habit windows share the panel's taskbar button.
+- Scrolling over a window that covers the panel scrolls that window, not the panel.
+
+</details>
+
 ## 1.0.0
 
 - **Out of beta.**

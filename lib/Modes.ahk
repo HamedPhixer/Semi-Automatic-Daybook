@@ -42,11 +42,9 @@ ToggleOnTop() {
 ; always-on-top hands the job back to Windows, and the panel then behaves like
 ; every other window on the screen, every time and not just the first.
 ;
-; Hover still works while it is off, and it works on the panel's RECTANGLE - so
-; a panel buried under another window will still light up when your pointer
-; crosses where it is. Nothing can be done about that without hit-testing every
-; window above it, and it is a fair trade for the polling that makes GHOST mode
-; possible at all.
+; Hover still works while it is off, and only where the panel can be SEEN: a
+; panel buried under another window does not light up, tip or take the wheel
+; when your pointer crosses where it is - WindowSeenAt() in SeenAt.ahk.
 ;
 ; As an ordinary window (PanelTaskbar) it never has the flag: clicking a window
 ; and having it take the keyboard is what a window does, on top or not.

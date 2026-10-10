@@ -33,8 +33,11 @@
 ;   Tray       the tray icon's menu, and leaving tidily
 ;   Ini        the commented Daybook.ini written on the first run
 ;
-; Last of all, Settings.ahk: the reader that turns Daybook.ini into values. It
-; is all functions, so where it goes in the list does not matter.
+; Last of all, Settings.ahk: the reader that turns Daybook.ini into values, and
+; Taskbar.ahk: Daybook's windows get a taskbar button of their own, not one
+; shared with other AutoHotkey scripts. And SeenAt.ahk: whether the pointer is
+; on the panel you can see, or on a window over it. All three are all functions,
+; so where they go in the list does not matter.
 ;================================================================================
 #Include %A_LineFile%\..\Config.ahk
 #Include %A_LineFile%\..\State.ahk
@@ -63,3 +66,5 @@
 #Include %A_LineFile%\..\Tray.ahk
 #Include %A_LineFile%\..\Ini.ahk
 #Include %A_LineFile%\..\Settings.ahk
+#Include %A_LineFile%\..\Taskbar.ahk
+#Include %A_LineFile%\..\SeenAt.ahk

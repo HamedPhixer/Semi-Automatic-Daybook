@@ -266,6 +266,7 @@ PanelCanScroll() {
     CoordMode, Mouse, Screen
     MouseGetPos, mx, my
     return (mx >= px && mx <= px + pw && my >= py && my <= py + ph)
+        && WindowSeenAt(PanelHwnd, mx, my)    ; the wheel belongs to a window on top of it
 }
 
 ; Open sections point down, closed ones point right - the usual accordion cue,

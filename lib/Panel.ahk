@@ -17,6 +17,8 @@ BuildPanel() {
     Gui, Panel:New, % "+AlwaysOnTop -Caption +HwndPanelHwnd +LabelPnl "
                    . (PanelTaskbar ? "+MinimizeBox" : "+ToolWindow +E0x08000000")
     PanelKind := PanelTaskbar
+    ; Daybook's own taskbar button - the settings and habit windows join it
+    TaskbarId(PanelHwnd, "Ahk.Daybook")
     Gui, Panel:Margin, 0, 0
     Gui, Panel:Color, %CBg%
 
